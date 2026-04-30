@@ -781,7 +781,7 @@ function renderCards() {
         <div class="card-row"><span class="card-row-label">Supervisor</span><span class="card-row-value">${d.supervisor}</span></div>
         <div class="card-row"><span class="card-row-label">Design</span><span class="card-row-value">${d.design.replace(/\s*\(.*\)/,'').trim()}</span></div>
         <div class="card-row"><span class="card-row-label">Sample</span><span class="card-row-value">${d.nl}</span></div>
-        <div class="card-row"><span class="card-row-label">Population</span><span class="card-row-value">${d.pop}</span></div>
+        <div class="card-row"><span class="card-row-label">Pop</span><span class="card-row-value">${d.pop}</span></div>
         <div class="card-row"><span class="card-row-label">Methods</span><span class="card-row-value">${d.methods.slice(0,3).join(' · ')}</span></div>
       </div>
     `;
@@ -812,7 +812,7 @@ function openDetail(d) {
     </div>
     <div class="d-kv"><div class="d-k">Design</div><div class="d-v">${d.design}</div></div>
     <div class="d-kv"><div class="d-k">Data</div><div class="d-v">${d.dtype} · ${d.dsrc}</div></div>
-    <div class="d-kv"><div class="d-k">Population</div><div class="d-v">${d.pop}</div></div>
+    <div class="d-kv"><div class="d-k">Pop</div><div class="d-v">${d.pop}</div></div>
     <div class="d-hr"></div>
     <div class="d-kv"><div class="d-k">Methods</div>
       <div class="d-v"><div class="d-pills">${d.methods.map(m=>`<span class="d-pill">${m}</span>`).join('')}</div></div>
