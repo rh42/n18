@@ -63,7 +63,7 @@ input{font:inherit;color:inherit}
 .logo svg{color:var(--primary)}
 .logo-text{font-size:0.9rem;font-weight:700;letter-spacing:-0.01em;line-height:1.1}
 .logo-sub{font-size:0.7rem;color:var(--dim);font-weight:400;display:block}
-nav{display:flex;gap:0.25rem;flex:1}
+nav{display:flex;gap:0.25rem;flex:1;justify-content:center}
 .tab{
   padding:0.35rem 0.9rem;font-size:0.85rem;font-weight:500;
   border-radius:var(--r-full);color:var(--dim);
@@ -121,7 +121,7 @@ main{max-width:1200px;margin:0 auto;padding:clamp(1.5rem,4vw,2.5rem) clamp(1rem,
 
 /* ── DETAIL PANEL ───────────────────────────────────────────────────────── */
 #detail{
-  position:fixed;top:60px;right:-360px;bottom:12px;
+  position:fixed;top:60px;right:-400px;bottom:12px;
   width:380px;z-index:200;
   background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);
   padding:1.25rem;overflow-y:auto;
@@ -261,7 +261,7 @@ footer a{color:var(--primary);text-decoration:none}
       <line x1="21" y1="9" x2="14" y2="14" stroke="currentColor" stroke-width=".8" stroke-opacity=".35" stroke-dasharray="2,2"/>
       <line x1="20" y1="19" x2="14" y2="14" stroke="currentColor" stroke-width=".8" stroke-opacity=".35" stroke-dasharray="2,2"/>
     </svg>
-    <span class="logo-text">18 Minds<span class="logo-sub">Cohort Research Dashboard</span></span>
+    <span class="logo-text">18 Minds</span>
   </a>
   <nav role="navigation" aria-label="Main tabs">
     <button class="tab on" onclick="showTab('overview')" id="t-overview">Overview</button>
