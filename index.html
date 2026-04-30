@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>18 Minds · Cohort Research Dashboard</title>
+<link rel="icon" type="image/png" href="favicon.png">
 <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700&display=swap" rel="stylesheet">
 
 <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
@@ -40,8 +41,10 @@
 }
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;scroll-behavior:smooth}
-body{min-height:100dvh;font-family:var(--font);font-size:1rem;color:var(--text);background:var(--bg);line-height:1.6}
+html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;scroll-behavior:smooth;
+font-size:18px;}
+body{min-height:100dvh;font-family:var(--font);font-size:1rem;font-weight:500;
+  color:var(--text);background:var(--bg);line-height:1.6; overflow-x: hidden; /* new: stop tiny horizontal overflow */}
 img,svg{display:block;max-width:100%}
 button{cursor:pointer;background:none;border:none;font:inherit;color:inherit}
 input{font:inherit;color:inherit}
@@ -88,14 +91,11 @@ main{max-width:1200px;margin:0 auto;padding:clamp(1.5rem,4vw,2.5rem) clamp(1rem,
 .kpi-lbl{font-size:0.78rem;color:var(--sub);font-weight:500;letter-spacing:0.02em}
 .kpi-sub{font-size:0.7rem;color:var(--dim);margin-top:0.15rem}
 
-.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem}
-@media(max-width:720px){.charts-grid{grid-template-columns:1fr}}
-.chart-card{
-  background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);
-  padding:1.25rem;box-shadow:var(--sh-sm);
-}
-.chart-card h3{font-size:0.82rem;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;color:var(--dim);margin-bottom:1rem}
-.chart-wrap{width:100%;min-height:220px}
+
+@media(max-width:720px){}
+
+
+
 
 /* ── CONSTELLATION ──────────────────────────────────────────────────────── */
 #view-cst{position:relative;height:calc(100dvh - 52px);overflow:hidden;background:var(--bg)}
@@ -122,7 +122,7 @@ main{max-width:1200px;margin:0 auto;padding:clamp(1.5rem,4vw,2.5rem) clamp(1rem,
 /* ── DETAIL PANEL ───────────────────────────────────────────────────────── */
 #detail{
   position:fixed;top:60px;right:-360px;bottom:12px;
-  width:340px;z-index:200;
+  width:380px;z-index:200;
   background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);
   padding:1.25rem;overflow-y:auto;
   transition:right .3s cubic-bezier(0.16,1,0.3,1);
@@ -197,11 +197,11 @@ main{max-width:1200px;margin:0 auto;padding:clamp(1.5rem,4vw,2.5rem) clamp(1rem,
 .results-count{font-size:0.78rem;color:var(--dim);margin-left:auto;white-space:nowrap}
 
 /* ── CARD GRID & CARDS ────────────────────────────────────────────────── */
-.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(340px,100%),1fr));gap:1.1rem}
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(380px,100%),1fr));gap:1.1rem}
 .project-card{
   background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);
-  padding:1.1rem 1.2rem 1.2rem;cursor:pointer;
-  display:flex;flex-direction:column;gap:0.6rem;
+  padding:1.3rem 1.4rem 1.4rem;cursor:pointer;
+  display:flex;flex-direction:column;gap:0.8rem;
   box-shadow:var(--sh-sm);transition:box-shadow var(--t),transform var(--t);
 }
 .project-card:hover{box-shadow:var(--sh-md);transform:translateY(-1px)}
@@ -275,28 +275,22 @@ footer a{color:var(--primary);text-decoration:none}
   <main>
     <div class="sect-hdr">
       <h1>18 Minds at a Glance</h1>
-      <p>MSc Cognitive Neuroscience &amp; Neuropsychology · 18 thesis projects · 2025–26</p>
+      <p>MSc Clinical Neuroscience · 18 thesis projects · 2025–26</p>
     </div>
     <div class="kpi-row">
       <div class="kpi"><div class="kpi-val">18</div><div class="kpi-lbl">Projects</div><div class="kpi-sub">In this cohort</div></div>
-      <div class="kpi"><div class="kpi-val">8</div><div class="kpi-lbl">Research Areas</div><div class="kpi-sub">Across 6 clusters</div></div>
-      <div class="kpi"><div class="kpi-val">6</div><div class="kpi-lbl">Supervisors</div><div class="kpi-sub">+ co-supervisors</div></div>
-      <div class="kpi"><div class="kpi-val">11</div><div class="kpi-lbl">Secondary Data</div><div class="kpi-sub">Existing datasets</div></div>
-      <div class="kpi"><div class="kpi-val">10</div><div class="kpi-lbl">Vulnerable Pops</div><div class="kpi-sub">Ethics approved</div></div>
-      <div class="kpi"><div class="kpi-val">5</div><div class="kpi-lbl">Qual / Mixed</div><div class="kpi-sub">Methods used</div></div>
+      <div class="kpi"><div class="kpi-val">8</div><div class="kpi-lbl">Clusters</div><div class="kpi-sub">Research areas</div></div>
+      <div class="kpi"><div class="kpi-val">12</div><div class="kpi-lbl">Supervisors</div><div class="kpi-sub">+ co-supervisors</div></div>
+      <div class="kpi"><div class="kpi-val">13</div><div class="kpi-lbl">Secondary Data</div><div class="kpi-sub">72% of cohort</div></div>
+      <div class="kpi"><div class="kpi-val">12</div><div class="kpi-lbl">Vulnerable Pops</div><div class="kpi-sub">Ethics approved</div></div>
+      <div class="kpi"><div class="kpi-val">2</div><div class="kpi-lbl">Qual / Mixed</div><div class="kpi-sub">16 quantitative</div></div>
     </div>
-    <div class="charts-grid">
-      <div class="chart-card"><h3>Projects by Research Cluster</h3><div class="chart-wrap" id="ch-cluster"></div></div>
-      <div class="chart-card"><h3>Data Source</h3><div class="chart-wrap" id="ch-dsrc"></div></div>
-      <div class="chart-card"><h3>Study Design Types</h3><div class="chart-wrap" id="ch-design"></div></div>
-      <div class="chart-card"><h3>Top Methods Used</h3><div class="chart-wrap" id="ch-methods"></div></div>
-    </div>
+    
   </main>
   <footer>
-    <em>Built with Python, HTML &amp; deeply repressed thesis anxiety.</em><br>
+    <em>Built by Robin L with Python, HTML &amp; repressed thesis anxiety.</em><br>
     All nodes are statistically significant (p &lt; .05 for being impressive).<br>
-    This dashboard has not been pre-registered · n=18 is technically enough for a Wilcoxon.<br>
-    Default mode network: <em>activated</em> · Executive function: <em>questionable</em> · Coffee: <em>unmeasured, but significant</em>
+    This dashboard has not been pre-registered · n=18 is technically enough for a Wilcoxon.
   </footer>
 </div>
 
@@ -314,7 +308,6 @@ footer a{color:var(--primary);text-decoration:none}
   <main>
     <div class="sect-hdr">
       <h1>All 18 Projects</h1>
-      <p>Search by name, title, supervisor, or cluster</p>
     </div>
     <div class="projects-controls">
       <div class="search-wrap">
@@ -344,9 +337,8 @@ footer a{color:var(--primary);text-decoration:none}
     <div class="cards-grid" id="proj-grid"></div>
   </main>
   <footer>
-    <em>Made with Python, HTML &amp; questionable coping mechanisms.</em><br>
-    Correlation ≠ causation · All blobs are convex hulls, just like our coping strategies.<br>
-    The PhD is reproducible in theory · <em>n=1 researcher, p=underpowered</em>
+    <em>Built by Robin L with Python, HTML & repressed thesis anxiety.</em><br>
+    Correlation ≠ causation · All blobs are convex hulls, just like our coping strategies.
   </footer>
 </div>
 
@@ -455,7 +447,7 @@ const DATA = [
     design:"Cross-Sectional Secondary (TCP)", dtype:"Quantitative", dsrc:"Secondary",
     n:236, nl:"143 psych + 93 HC", methods:["Resting-state fMRI","Group ICA","Default Mode Network","MANCOVA"],
     pop:"Psychiatric patients (mixed dx) + healthy controls", vuln:true, cl:"Social & Cognitive Neuro" },
-  { id:13, student:"Robin Wanyi Li",                 supervisor:"Dr. Dara M Cannon",
+  { id:13, student:"Robin Wanyi Li",                 supervisor:"Dr. Dara Cannon",
     title:"Structural–Functional Coupling and General Cognitive Ability: A Secondary Analysis of UK Biobank Imaging Data",
     short:"Structural-functional brain coupling vs. general cognitive ability — UK Biobank (n≈16k)",
     design:"Observational Secondary (UK Biobank)", dtype:"Quantitative", dsrc:"Secondary",
@@ -526,90 +518,9 @@ const layout_base = {
   showlegend:false,
 };
 
-// Chart 1: projects per cluster
-(function(){
-  const counts = {};
-  DATA.forEach(d => { counts[d.cl] = (counts[d.cl]||0) + 1; });
-  const sorted = Object.entries(counts).sort((a,b) => b[1]-a[1]);
-  const labels = sorted.map(e => e[0]);
-  const vals   = sorted.map(e => e[1]);
-  const cols   = labels.map(l => CL[l]);
-  Plotly.newPlot('ch-cluster', [{
-    type:'bar', orientation:'h',
-    x:vals, y:labels,
-    marker:{color:cols, opacity:0.8},
-    text:vals, textposition:'outside',
-    hovertemplate:'%{y}: %{x}<extra></extra>',
-  }], {
-    ...layout_base,
-    margin:{t:10,b:30,l:10,r:30},
-    yaxis:{automargin:true, tickfont:{size:10}, tickcolor:'transparent'},
-    xaxis:{visible:false, range:[0, Math.max(...vals)+1]},
-    height:220,
-  }, cfg);
-})();
 
-// Chart 2: data source donut
-(function(){
-  const counts = {};
-  DATA.forEach(d => { counts[d.dsrc] = (counts[d.dsrc]||0) + 1; });
-  Plotly.newPlot('ch-dsrc', [{
-    type:'pie', hole:0.55,
-    labels:Object.keys(counts), values:Object.values(counts),
-    marker:{colors:['#6d28d9','#0e7490','#be123c']},
-    textinfo:'label+value', textfont:{size:11},
-    hovertemplate:'%{label}: %{value}<extra></extra>',
-  }], {
-    ...layout_base, height:220,
-    margin:{t:10,b:10,l:10,r:10},
-    showlegend:true,
-    legend:{orientation:'v', x:1, y:0.5, font:{size:10}},
-  }, cfg);
-})();
 
-// Chart 3: study design
-(function(){
-  const counts = {};
-  DATA.forEach(d => {
-    const key = d.design.replace(/\s*\(.*\)/,'').replace('Secondary Analysis','Secondary Analysis').trim();
-    const short = key.length > 28 ? key.slice(0,26)+'…' : key;
-    counts[short] = (counts[short]||0) + 1;
-  });
-  const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
-  Plotly.newPlot('ch-design', [{
-    type:'bar', orientation:'h',
-    x:sorted.map(e=>e[1]), y:sorted.map(e=>e[0]),
-    marker:{color:PURPLE, opacity:0.7},
-    text:sorted.map(e=>e[1]), textposition:'outside',
-    hovertemplate:'%{y}: %{x}<extra></extra>',
-  }], {
-    ...layout_base,
-    margin:{t:10,b:30,l:10,r:30},
-    yaxis:{automargin:true, tickfont:{size:10}},
-    xaxis:{visible:false, range:[0, Math.max(...sorted.map(e=>e[1]))+1]},
-    height:220,
-  }, cfg);
-})();
 
-// Chart 4: top methods
-(function(){
-  const counts = {};
-  DATA.forEach(d => d.methods.forEach(m => { counts[m] = (counts[m]||0)+1; }));
-  const top = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,12);
-  Plotly.newPlot('ch-methods', [{
-    type:'bar', orientation:'h',
-    x:top.map(e=>e[1]), y:top.map(e=>e[0]),
-    marker:{color:PURPLE, opacity:0.7},
-    text:top.map(e=>e[1]), textposition:'outside',
-    hovertemplate:'%{y} used in %{x} projects<extra></extra>',
-  }], {
-    ...layout_base,
-    margin:{t:10,b:30,l:10,r:30},
-    yaxis:{automargin:true, tickfont:{size:10}},
-    xaxis:{visible:false, range:[0, top[0][1]+1.5]},
-    height:220,
-  }, cfg);
-})();
 
 /* ══════════════════════════════════════════════════════════════════════════
    CONSTELLATION (D3 force — copied from original dashboard-1.html design)
