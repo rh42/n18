@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>18 Minds · Cohort Research Dashboard</title>
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700&display=swap" rel="stylesheet">
+
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<style>
+/* ── TOKENS ─────────────────────────────────────────────────────────────── */
+:root {
+  --bg:        #f7f6f2;
+  --bg2:       #efece6;
+  --surface:   #ffffff;
+  --border:    rgba(0,0,0,0.08);
+  --divider:   rgba(0,0,0,0.06);
+  --text:      #1c1829;
+  --sub:       #3d3453;
+  --dim:       #5e5578;
+  --faint:     #9990b8;
+  --primary:   #6d28d9;
+  --p-hover:   #5b21b6;
+  --p-active:  #4c1d95;
+  --p-hi:      #ede9fe;
+  --p-light:   #f5f3ff;
+  --font:      'Satoshi', 'Inter', sans-serif;
+
+  --mono:      'Satoshi', monospace;
+  --r-sm:      0.375rem;
+  --r-md:      0.5rem;
+  --r-lg:      0.75rem;
+  --r-xl:      1rem;
+  --r-full:    9999px;
+  --sh-sm:     0 1px 3px rgba(0,0,0,0.06);
+  --sh-md:     0 4px 14px rgba(0,0,0,0.08);
+  --sh-lg:     0 12px 32px rgba(0,0,0,0.10);
+  --t:         180ms cubic-bezier(0.16,1,0.3,1);
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;scroll-behavior:smooth}
+body{min-height:100dvh;font-family:var(--font);font-size:1rem;color:var(--text);background:var(--bg);line-height:1.6}
+img,svg{display:block;max-width:100%}
+button{cursor:pointer;background:none;border:none;font:inherit;color:inherit}
+input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--primary);outline-offset:3px;border-radius:var(--r-sm)}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+/* ── HEADER ─────────────────────────────────────────────────────────────── */
+#hdr{
+  position:sticky;top:0;z-index:100;
+  background:rgba(247,246,242,0.92);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  height:52px;display:flex;align-items:center;
+  padding:0 clamp(1rem,3vw,2rem);gap:2rem;
+}
+.logo{display:flex;align-items:center;gap:0.6rem;flex-shrink:0;text-decoration:none;color:var(--text)}
+.logo svg{color:var(--primary)}
+.logo-text{font-size:0.9rem;font-weight:700;letter-spacing:-0.01em;line-height:1.1}
+.logo-sub{font-size:0.7rem;color:var(--dim);font-weight:400;display:block}
+nav{display:flex;gap:0.25rem;flex:1}
+.tab{
+  padding:0.35rem 0.9rem;font-size:0.85rem;font-weight:500;
+  border-radius:var(--r-full);color:var(--dim);
+  transition:background var(--t),color var(--t);
+  white-space:nowrap;
+}
+.tab:hover{background:var(--bg2);color:var(--sub)}
+.tab.on{background:var(--p-hi);color:var(--primary)}
+
+/* ── LAYOUT ─────────────────────────────────────────────────────────────── */
+.view{display:none;min-height:calc(100dvh - 52px)}
+.view.on{display:block}
+main{max-width:1200px;margin:0 auto;padding:clamp(1.5rem,4vw,2.5rem) clamp(1rem,3vw,2rem) 4rem}
+
+/* ── OVERVIEW ───────────────────────────────────────────────────────────── */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1rem;margin-bottom:2rem}
+.kpi{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);
+  padding:1.1rem 1.25rem;box-shadow:var(--sh-sm);
+}
+.kpi-val{
+  font-family:var(--mono);font-size:2rem;font-weight:300;line-height:1;
+  color:var(--primary);font-variant-numeric:tabular-nums;margin-bottom:0.3rem;
+}
+.kpi-lbl{font-size:0.78rem;color:var(--sub);font-weight:500;letter-spacing:0.02em}
+.kpi-sub{font-size:0.7rem;color:var(--dim);margin-top:0.15rem}
+
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem}
+@media(max-width:720px){.charts-grid{grid-template-columns:1fr}}
+.chart-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);
+  padding:1.25rem;box-shadow:var(--sh-sm);
+}
+.chart-card h3{font-size:0.82rem;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;color:var(--dim);margin-bottom:1rem}
+.chart-wrap{width:100%;min-height:220px}
+
+/* ── CONSTELLATION ──────────────────────────────────────────────────────── */
+#view-cst{position:relative;height:calc(100dvh - 52px);overflow:hidden;background:var(--bg)}
+
+#cst-hdr{
+  position:absolute;top:14px;left:50%;transform:translateX(-50%);
+  z-index:20;display:flex;align-items:center;gap:0.5rem;
+  background:rgba(247,246,242,0.88);backdrop-filter:blur(10px);
+  border:1px solid var(--border);border-radius:var(--r-full);
+  padding:0.35rem 0.75rem;
+}
+#cst-hdr span{font-size:0.75rem;color:var(--dim);font-weight:500}
+#cst-pcount{color:var(--sub);font-weight:600}
+
+
+
+#cst-canvas{width:100%;height:100%;display:block}
+.node{cursor:pointer}
+.node .bg{fill:transparent}
+.node .dot{transition:r .15s,fill-opacity .15s}
+.node .ini{pointer-events:none;font-family:var(--font);text-anchor:middle;dominant-baseline:middle;font-weight:700;letter-spacing:0.04em}
+.node.dimmed{opacity:0.07;transition:opacity .25s}
+
+/* ── DETAIL PANEL ───────────────────────────────────────────────────────── */
+#detail{
+  position:fixed;top:60px;right:-360px;bottom:12px;
+  width:340px;z-index:200;
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);
+  padding:1.25rem;overflow-y:auto;
+  transition:right .3s cubic-bezier(0.16,1,0.3,1);
+  box-shadow:var(--sh-lg);
+}
+#detail.open{right:12px}
+#detail::-webkit-scrollbar{width:4px}
+#detail::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.08);border-radius:2px}
+.d-close{
+  position:absolute;top:12px;right:12px;
+  width:26px;height:26px;border-radius:50%;
+  background:var(--bg2);border:1px solid var(--border);
+  color:var(--dim);font-size:12px;
+  display:flex;align-items:center;justify-content:center;
+  transition:background var(--t);
+}
+.d-close:hover{background:var(--border)}
+.d-badge{
+  display:inline-block;font-size:0.7rem;letter-spacing:0.09em;text-transform:uppercase;
+  padding:0.2rem 0.6rem;border-radius:var(--r-full);border:1px solid;margin-bottom:0.75rem;
+}
+.d-title{font-family:var(--serif);font-size:0.95rem;font-weight:500;line-height:1.5;margin-bottom:0.75rem;color:var(--text)}
+.d-student{font-size:1rem;font-weight:700;margin-bottom:0.25rem;color:var(--text)}
+.d-super{font-size:0.8rem;color:var(--dim);margin-bottom:1rem}
+.d-hr{height:1px;background:var(--divider);margin:0.75rem 0}
+.d-kv{display:flex;gap:0.75rem;margin-bottom:0.4rem;align-items:baseline}
+.d-k{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--dim);flex-shrink:0;width:72px;padding-top:1px}
+.d-v{font-size:0.8rem;color:var(--sub);line-height:1.45}
+.d-big{font-family:var(--mono);font-size:1.75rem;font-weight:300;line-height:1;font-variant-numeric:tabular-nums;margin-top:2px}
+.d-pills{display:flex;flex-wrap:wrap;gap:0.3rem;margin-top:0.25rem}
+.d-pill{font-size:0.68rem;padding:0.2rem 0.5rem;background:var(--p-light);border-radius:var(--r-sm);color:var(--primary);border:1px solid var(--p-hi)}
+
+/* ── TOOLTIP ────────────────────────────────────────────────────────────── */
+#tip{
+  position:fixed;pointer-events:none;z-index:300;
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);
+  padding:0.6rem 0.8rem;box-shadow:var(--sh-md);max-width:220px;display:none;
+}
+.t-name{font-size:0.82rem;font-weight:700;color:var(--text);margin-bottom:0.2rem}
+.t-short{font-family:var(--serif);font-size:0.75rem;color:var(--dim);line-height:1.4}
+
+/* ── PROJECTS ───────────────────────────────────────────────────────────── */
+#view-proj main{padding-top:1.5rem}
+.filter-row{display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:1.25rem}
+.fp{
+  font-size:0.72rem;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;
+  padding:0.25rem 0.65rem;border-radius:var(--r-full);border:1.5px solid;
+  transition:background var(--t),opacity var(--t);cursor:pointer;
+  opacity:0.35;background:transparent;
+}
+.fp.on{opacity:1}
+
+/* ── PROJECTS CONTROLS ────────────────────────────────────────────────── */
+.projects-controls{display:flex;flex-wrap:wrap;gap:0.6rem;margin-bottom:1rem;align-items:center}
+.search-wrap{position:relative;flex:1;min-width:220px;max-width:380px}
+.search-wrap svg{position:absolute;left:0.65rem;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--faint);pointer-events:none}
+.search-input{
+  width:100%;padding:0.45rem 0.75rem 0.45rem 2rem;
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);
+  font-size:0.85rem;color:var(--text);outline:none;font-family:var(--font);
+  transition:border-color var(--t),box-shadow var(--t);
+}
+.search-input::placeholder{color:var(--faint)}
+.search-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--p-hi);outline:none}
+.filter-select{
+  padding:0.45rem 0.7rem;background:var(--surface);
+  border:1px solid var(--border);border-radius:var(--r-md);
+  font-size:0.82rem;color:var(--sub);cursor:pointer;outline:none;font-family:var(--font);
+  transition:border-color var(--t);
+}
+.filter-select:focus{border-color:var(--primary)}
+.results-count{font-size:0.78rem;color:var(--dim);margin-left:auto;white-space:nowrap}
+
+/* ── CARD GRID & CARDS ────────────────────────────────────────────────── */
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(340px,100%),1fr));gap:1.1rem}
+.project-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);
+  padding:1.1rem 1.2rem 1.2rem;cursor:pointer;
+  display:flex;flex-direction:column;gap:0.6rem;
+  box-shadow:var(--sh-sm);transition:box-shadow var(--t),transform var(--t);
+}
+.project-card:hover{box-shadow:var(--sh-md);transform:translateY(-1px)}
+.card-header{display:flex;justify-content:space-between;align-items:flex-start;gap:0.6rem}
+.card-cluster-label{font-size:0.7rem;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;padding-top:1px;line-height:1}
+.card-badges{display:flex;gap:0.3rem;flex-wrap:wrap;justify-content:flex-end;flex-shrink:0}
+.badge{font-size:0.68rem;font-weight:600;padding:0.18rem 0.5rem;border-radius:var(--r-full);letter-spacing:0.03em;white-space:nowrap}
+.badge-secondary{background:var(--p-light);color:var(--primary)}
+.badge-primary{background:#f0fdf0;color:#166534}
+.badge-mixed{background:#fefce8;color:#854d0e}
+.badge-vuln{background:#fff1f2;color:#9f1239}
+.card-student{font-size:0.97rem;font-weight:700;color:var(--text);line-height:1.2}
+.card-title{font-size:0.82rem;color:var(--sub);line-height:1.5}
+.card-divider{height:1px;background:var(--divider)}
+.card-meta{display:flex;flex-direction:column;gap:0.25rem}
+.card-row{display:flex;gap:0.5rem;font-size:0.75rem}
+.card-row-label{color:var(--faint);font-weight:600;min-width:76px;flex-shrink:0;text-transform:uppercase;letter-spacing:0.04em}
+.card-row-value{color:var(--sub)}
+.no-results{grid-column:1/-1;text-align:center;padding:4rem 2rem;color:var(--dim)}
+
+/* ── SECTION HEADER ─────────────────────────────────────────────────────── */
+.sect-hdr{margin-bottom:1.5rem}
+.sect-hdr h1{font-size:1.4rem;font-weight:700;color:var(--text);letter-spacing:-0.02em}
+.sect-hdr p{font-size:0.88rem;color:var(--dim);margin-top:0.25rem}
+
+/* ── FOOTER ─────────────────────────────────────────────────────────────── */
+footer{
+  text-align:center;padding:1.25rem 1rem;
+  border-top:1px solid var(--divider);
+  font-size:0.72rem;color:var(--faint);line-height:1.8;
+}
+footer em{font-style:normal;color:var(--dim)}
+footer a{color:var(--primary);text-decoration:none}
+
+/* ── MOBILE ─────────────────────────────────────────────────────────────── */
+@media(max-width:480px){
+  .kpi-val{font-size:1.6rem}
+  #detail{width:calc(100vw - 24px);right:-120vw}
+  #detail.open{right:12px}
+  .tab{padding:0.3rem 0.6rem;font-size:0.8rem}
+}
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ─────────────────────────────────────────────────────────── -->
+<header id="hdr" role="banner">
+  <a class="logo" href="#" onclick="showTab('overview');return false" aria-label="n=18 home">
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+      <circle cx="14" cy="14" r="12" stroke="currentColor" stroke-width="1.5"/>
+      <circle cx="14" cy="14" r="4" fill="currentColor" opacity=".25"/>
+      <circle cx="7"  cy="9"  r="2.2" fill="currentColor"/>
+      <circle cx="21" cy="9"  r="1.5" fill="currentColor" opacity=".6"/>
+      <circle cx="20" cy="19" r="2.5" fill="currentColor" opacity=".8"/>
+      <circle cx="9"  cy="20" r="1.8" fill="currentColor" opacity=".5"/>
+      <line x1="7" y1="9" x2="14" y2="14" stroke="currentColor" stroke-width=".8" stroke-opacity=".35" stroke-dasharray="2,2"/>
+      <line x1="21" y1="9" x2="14" y2="14" stroke="currentColor" stroke-width=".8" stroke-opacity=".35" stroke-dasharray="2,2"/>
+      <line x1="20" y1="19" x2="14" y2="14" stroke="currentColor" stroke-width=".8" stroke-opacity=".35" stroke-dasharray="2,2"/>
+    </svg>
+    <span class="logo-text">18 Minds<span class="logo-sub">Cohort Research Dashboard</span></span>
+  </a>
+  <nav role="navigation" aria-label="Main tabs">
+    <button class="tab on" onclick="showTab('overview')" id="t-overview">Overview</button>
+    <button class="tab" onclick="showTab('cst')" id="t-cst">Constellation</button>
+    <button class="tab" onclick="showTab('proj')" id="t-proj">Projects</button>
+  </nav>
+</header>
+
+<!-- ── OVERVIEW ───────────────────────────────────────────────────────── -->
+<div class="view on" id="view-overview" role="main">
+  <main>
+    <div class="sect-hdr">
+      <h1>18 Minds at a Glance</h1>
+      <p>MSc Cognitive Neuroscience &amp; Neuropsychology · 18 thesis projects · 2025–26</p>
+    </div>
+    <div class="kpi-row">
+      <div class="kpi"><div class="kpi-val">18</div><div class="kpi-lbl">Projects</div><div class="kpi-sub">In this cohort</div></div>
+      <div class="kpi"><div class="kpi-val">8</div><div class="kpi-lbl">Research Areas</div><div class="kpi-sub">Across 6 clusters</div></div>
+      <div class="kpi"><div class="kpi-val">6</div><div class="kpi-lbl">Supervisors</div><div class="kpi-sub">+ co-supervisors</div></div>
+      <div class="kpi"><div class="kpi-val">11</div><div class="kpi-lbl">Secondary Data</div><div class="kpi-sub">Existing datasets</div></div>
+      <div class="kpi"><div class="kpi-val">10</div><div class="kpi-lbl">Vulnerable Pops</div><div class="kpi-sub">Ethics approved</div></div>
+      <div class="kpi"><div class="kpi-val">5</div><div class="kpi-lbl">Qual / Mixed</div><div class="kpi-sub">Methods used</div></div>
+    </div>
+    <div class="charts-grid">
+      <div class="chart-card"><h3>Projects by Research Cluster</h3><div class="chart-wrap" id="ch-cluster"></div></div>
+      <div class="chart-card"><h3>Data Source</h3><div class="chart-wrap" id="ch-dsrc"></div></div>
+      <div class="chart-card"><h3>Study Design Types</h3><div class="chart-wrap" id="ch-design"></div></div>
+      <div class="chart-card"><h3>Top Methods Used</h3><div class="chart-wrap" id="ch-methods"></div></div>
+    </div>
+  </main>
+  <footer>
+    <em>Built with Python, HTML &amp; deeply repressed thesis anxiety.</em><br>
+    All nodes are statistically significant (p &lt; .05 for being impressive).<br>
+    This dashboard has not been pre-registered · n=18 is technically enough for a Wilcoxon.<br>
+    Default mode network: <em>activated</em> · Executive function: <em>questionable</em> · Coffee: <em>unmeasured, but significant</em>
+  </footer>
+</div>
+
+<!-- ── CONSTELLATION ──────────────────────────────────────────────────── -->
+<div class="view" id="view-cst">
+  <div id="cst-hdr">
+    <span><strong id="cst-pcount">18</strong> projects · bubble = sample size · dashed line = shared supervisor</span>
+  </div>
+  <svg id="cst-canvas" aria-label="Research constellation"></svg>
+
+</div>
+
+<!-- ── PROJECTS ───────────────────────────────────────────────────────── -->
+<div class="view" id="view-proj">
+  <main>
+    <div class="sect-hdr">
+      <h1>All 18 Projects</h1>
+      <p>Search by name, title, supervisor, or cluster</p>
+    </div>
+    <div class="projects-controls">
+      <div class="search-wrap">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="6.5" cy="6.5" r="4.5"/><path d="M10.5 10.5 L14 14"/></svg>
+        <input id="proj-search" class="search-input" type="search" placeholder="Search by name, title, supervisor…" aria-label="Search projects">
+      </div>
+      <select id="filter-dsrc" class="filter-select" aria-label="Filter by data source">
+        <option value="">All sources</option>
+        <option value="Primary">Primary</option>
+        <option value="Secondary">Secondary</option>
+        <option value="Mixed">Mixed</option>
+      </select>
+      <select id="filter-dtype" class="filter-select" aria-label="Filter by data type">
+        <option value="">All data types</option>
+        <option value="Quantitative">Quantitative</option>
+        <option value="Qualitative">Qualitative</option>
+        <option value="Mixed">Mixed</option>
+      </select>
+      <select id="filter-vuln" class="filter-select" aria-label="Filter by population">
+        <option value="">All populations</option>
+        <option value="vuln">Vulnerable pop.</option>
+        <option value="nonvuln">Non-vulnerable</option>
+      </select>
+      <span id="proj-count" class="results-count">18 projects</span>
+    </div>
+    <div class="filter-row" id="proj-filters" role="group" aria-label="Filter by cluster"></div>
+    <div class="cards-grid" id="proj-grid"></div>
+  </main>
+  <footer>
+    <em>Made with Python, HTML &amp; questionable coping mechanisms.</em><br>
+    Correlation ≠ causation · All blobs are convex hulls, just like our coping strategies.<br>
+    The PhD is reproducible in theory · <em>n=1 researcher, p=underpowered</em>
+  </footer>
+</div>
+
+<!-- ── DETAIL PANEL ────────────────────────────────────────────────────── -->
+<div id="detail" role="dialog" aria-label="Project detail" aria-modal="true">
+  <button class="d-close" onclick="closeDetail()" aria-label="Close">✕</button>
+  <div id="di"></div>
+</div>
+
+<!-- ── TOOLTIP ─────────────────────────────────────────────────────────── -->
+<div id="tip" role="tooltip"></div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════════════
+   DATA
+══════════════════════════════════════════════════════════════════════════ */
+const CL = {
+  "Schizophrenia & Psychosis": "#1D4ED8",
+  "Mood Disorders":            "#6D28D9",
+  "Social & Cognitive Neuro": "#0E7490",
+  "Mental Health & Crisis":   "#BE123C",
+  "Genomics & Comp Bio":      "#047857",
+  "Neurodegeneration":        "#B45309",
+  "Trauma & Therapy":         "#BE185D",
+  "Education & Language":     "#4D7C0F",
+};
+
+const SUPGROUPS = {
+  mcinerney: [1,2],
+  donohoe:   [7,8,11],
+  cannon:    [12,13],
+  hallahan:  [14,17],
+  mcdonald:  [10,18],
+};
+
+const DATA = [
+  { id:1,  student:"Moya Dunne",                    supervisor:"Dr. Shane McInerney",
+    title:"Comparing intentional overdose with co-occurring substance misuse, self-harm and suicide-related ideation: a national registry study",
+    short:"National registry study across 27 Irish EDs — overdose, self-harm & suicidal ideation",
+    design:"Observational Cross-Sectional Registry", dtype:"Quantitative", dsrc:"Secondary",
+    n:50000, nl:"~50,000",  methods:["Descriptive Stats","Chi-Square"],
+    pop:"Adults & children in mental health crisis (27 EDs)", vuln:true, cl:"Mental Health & Crisis" },
+  { id:2,  student:"Myna Chadalavada",               supervisor:"Dr. Shane McInerney",
+    title:"Treatment resistance scores and longitudinal outcomes after intranasal esketamine treatment in TRD",
+    short:"Longitudinal outcomes of esketamine (Spravato) in treatment-resistant depression",
+    design:"Longitudinal Observational", dtype:"Quantitative", dsrc:"Secondary",
+    n:20, nl:"20", methods:["Regression","MADRS","BCCCI","DM-TRD"],
+    pop:"Treatment-resistant depression patients", vuln:false, cl:"Mood Disorders" },
+  { id:3,  student:"Ruthushree Podonolana Basappa",  supervisor:"Prof. Derek Morris",
+    title:"Leveraging Methylation Quantitative Trait Loci to Refine GWAS Risk Signals and Prioritise Drug Targets in Neurodevelopmental Disorders",
+    short:"Bioinformatics: mQTLs & GWAS colocalisation to prioritise drug targets in NDDs",
+    design:"Computational Bioinformatics", dtype:"Quantitative", dsrc:"Secondary",
+    n:166, nl:"~166 (fetal mQTL)", methods:["COLOC","Bioinformatics","GWAS"],
+    pop:"Computational — no direct participants", vuln:false, cl:"Genomics & Comp Bio" },
+  { id:4,  student:"Clare McGuinness",               supervisor:"Dr. Andrea Kwakowsky",
+    title:"Caffeine as a Therapeutic Option for Alzheimer's Disease",
+    short:"Pearson correlation of caffeine intake and Alzheimer's biomarkers (n=1,650)",
+    design:"Cross-Sectional Secondary Analysis", dtype:"Quantitative", dsrc:"Secondary",
+    n:1650, nl:"1,650", methods:["Pearson Correlation","SPSS"],
+    pop:"Irish adults (some with dementia)", vuln:true, cl:"Neurodegeneration" },
+  { id:5,  student:"Mia Walsh",                      supervisor:"Prof. Brian McGuire",
+    title:"Exploring the psychological impact of chronic pain associated with vaginal mesh complications in Ireland",
+    short:"Qualitative interviews on psychological distress in women with mesh-related chronic pain",
+    design:"Qualitative Semi-Structured Interviews", dtype:"Qualitative", dsrc:"Primary",
+    n:12, nl:"10–15 (planned)", methods:["Thematic Analysis","NVivo"],
+    pop:"Women with chronic pain (Ireland)", vuln:true, cl:"Mental Health & Crisis" },
+  { id:6,  student:"Niamh Woods",                    supervisor:"Tom Burke",
+    title:"Returning to Work with Angiogram Negative Subarachnoid Haemorrhage",
+    short:"Cognitive & psychological barriers to work return after anSAH stroke",
+    design:"Cross-Sectional + Case-Matched Control", dtype:"Quantitative", dsrc:"Primary",
+    n:50, nl:"TBC", methods:["CANTAB","WAIS","PHQ-9","GAD-7","Logistic Regression"],
+    pop:"anSAH stroke patients + healthy controls", vuln:true, cl:"Neurodegeneration" },
+  { id:7,  student:"Juliette Borton",                supervisor:"Prof. Gary Donohoe",
+    title:"Social Cognition and Functional Outcomes Following a Virtual Reality Intervention in Individuals With a History of Childhood Trauma",
+    short:"VR intervention effects on social cognition in adults with childhood trauma (SOCIAbLE)",
+    design:"Secondary Analysis (SOCIAbLE)", dtype:"Quantitative", dsrc:"Secondary",
+    n:32, nl:"32", methods:["BLERT","RMET","CANTAB ERT","AIHQ","SOFAS","Regression"],
+    pop:"Adults with childhood adversity (community)", vuln:true, cl:"Social & Cognitive Neuro" },
+  { id:8,  student:"Lauren O'Keeffe",                supervisor:"Gary Donohoe",
+    title:"Childhood Trauma and Stress Reactivity: Structural Brain Differences in Schizophrenia and Healthy Controls",
+    short:"MRI of amygdala / ACC / hippocampus in schizophrenia with childhood trauma (iRELATE)",
+    design:"Cross-Sectional Secondary (iRELATE)", dtype:"Quantitative", dsrc:"Secondary",
+    n:170, nl:"~160–180", methods:["CTQ","Cortisol (TSST)","Structural MRI","Logistic Regression","Mediation"],
+    pop:"Schizophrenia patients + healthy controls", vuln:true, cl:"Schizophrenia & Psychosis" },
+  { id:9,  student:"Michael Hennessy",               supervisor:"Slé Ní Mhurchú",
+    title:"Apathy as a Mediator of the Relationship Between Disease Progression and Emotion Recognition in Premanifest Huntington's Disease",
+    short:"Mediation analysis of apathy & emotion recognition in premanifest HD (PREDICT-HD)",
+    design:"Cross-Sectional Secondary (PREDICT-HD)", dtype:"Quantitative", dsrc:"Secondary",
+    n:1485, nl:"Up to 1,485", methods:["ERT","Apathy Subscale","ETMO","Mediation Analysis"],
+    pop:"Premanifest Huntington's Disease", vuln:true, cl:"Social & Cognitive Neuro" },
+  { id:10, student:"Lauren Walsh",                   supervisor:"Dr. Colm McDonald",
+    title:"Investigating Associations Between Symptoms and Illness Course Variables Influencing White Matter Tract Organisation in Bipolar Disorder and MDD",
+    short:"Diffusion MRI & TBSS of white matter in BD/MDD — ENIGMA consortium (n≈11k)",
+    design:"Exploratory Cross-Sectional (ENIGMA)", dtype:"Quantitative", dsrc:"Secondary",
+    n:11243, nl:"~11,243", methods:["Diffusion MRI","TBSS","ANCOVA","Linear Mixed Models","R"],
+    pop:"BD + MDD + healthy controls (multi-site global)", vuln:true, cl:"Mood Disorders" },
+  { id:11, student:"Donna Nagle",                    supervisor:"Prof. Gary Donohoe",
+    title:"White Matter Integrity, Social Cognition, and Negative Symptoms in Schizophrenia",
+    short:"DTI / fractional anisotropy mediates social cognition & negative symptoms in SZ",
+    design:"Cross-Sectional Secondary (iRELATE)", dtype:"Quantitative", dsrc:"Secondary",
+    n:236, nl:"58 SZ + 178 HC", methods:["DTI","Fractional Anisotropy","PANSS","ERT","Mediation","R"],
+    pop:"Schizophrenia outpatients + healthy controls", vuln:true, cl:"Schizophrenia & Psychosis" },
+  { id:12, student:"Alan Sheerin",                   supervisor:"Dr. Dara Cannon",
+    title:"The Brain Network Underlying Perceived Social Support: A Group Independent Component Analysis",
+    short:"Resting-state fMRI / Group ICA of social support networks in mixed psychiatric sample",
+    design:"Cross-Sectional Secondary (TCP)", dtype:"Quantitative", dsrc:"Secondary",
+    n:236, nl:"143 psych + 93 HC", methods:["Resting-state fMRI","Group ICA","Default Mode Network","MANCOVA"],
+    pop:"Psychiatric patients (mixed dx) + healthy controls", vuln:true, cl:"Social & Cognitive Neuro" },
+  { id:13, student:"Robin Wanyi Li",                 supervisor:"Dr. Dara M Cannon",
+    title:"Structural–Functional Coupling and General Cognitive Ability: A Secondary Analysis of UK Biobank Imaging Data",
+    short:"Structural-functional brain coupling vs. general cognitive ability — UK Biobank (n≈16k)",
+    design:"Observational Secondary (UK Biobank)", dtype:"Quantitative", dsrc:"Secondary",
+    n:16000, nl:"~16,000", methods:["SFC","g factor","Linear Regression"],
+    pop:"UK Biobank participants (45–82 yrs)", vuln:false, cl:"Social & Cognitive Neuro" },
+  { id:14, student:"Emma Breen",                     supervisor:"Dr. Brian Hallahan",
+    title:"Clozapine-induced hypersalivation: A 10-year follow-up study",
+    short:"10-year longitudinal study of hypersalivation side effects in clozapine patients",
+    design:"Longitudinal 10-Year Follow-Up", dtype:"Quantitative", dsrc:"Primary",
+    n:55, nl:"~50–60", methods:["DSFS","NHRS","PSP","SOFAS","Paired t-test","Linear Mixed Models"],
+    pop:"Clozapine clinic patients (schizophrenia)", vuln:true, cl:"Schizophrenia & Psychosis" },
+  { id:15, student:"Ioanna Lazaridou",               supervisor:"Dr. Zohreh Doborjeh",
+    title:"Investigating EEG Changes Before and After Havening Therapy",
+    short:"64-channel EEG theta/alpha power before & after Havening psychosensory therapy",
+    design:"Secondary Analysis (RCT — NTU dataset)", dtype:"Quantitative", dsrc:"Secondary",
+    n:24, nl:"24 (15/9)", methods:["64-ch EEG","DASS-21","PHQ-9","Repeated-Measures ANOVA"],
+    pop:"Adults with distressing memories (NTU)", vuln:false, cl:"Trauma & Therapy" },
+  { id:16, student:"Eimear Ní Shúilleabháin",        supervisor:"Dr. Ciara Egan",
+    title:"Irish Translation of the TOWRE",
+    short:"Reliability & validity of an Irish-language reading efficiency test in bilingual adults",
+    design:"Cross-Sectional Quantitative", dtype:"Quantitative", dsrc:"Primary",
+    n:100, nl:"100 (target)", methods:["TOWRE-2","LEAP-Q","Bilingual RAN","Correlation","Gorilla"],
+    pop:"Adult bilingual Irish-English speakers", vuln:false, cl:"Education & Language" },
+  { id:17, student:"Casey Cullen",                   supervisor:"Dr. Brian Hallahan",
+    title:"The impact of clozapine-induced hypersalivation on quality of life",
+    short:"Mixed-methods QoL study of clozapine side effects — interviews + questionnaires",
+    design:"Cross-Sectional Mixed Methods", dtype:"Mixed", dsrc:"Primary",
+    n:120, nl:"~120", methods:["DSFS","NHRS","ANCOVA","Thematic Analysis","R","SPSS"],
+    pop:"Clozapine clinic patients (treatment-resistant SZ)", vuln:true, cl:"Schizophrenia & Psychosis" },
+  { id:18, student:"Zuzanna Wisniewska",             supervisor:"Dr. Colm McDonald",
+    title:"The association of mood symptoms with resting state fMRI connectivity across bipolar disorder and major depressive disorder",
+    short:"rs-fMRI connectivity in BD/MDD — ENIGMA HALFpipe (n≈11k, 47 international sites)",
+    design:"Cross-Sectional Secondary (ENIGMA)", dtype:"Quantitative", dsrc:"Secondary",
+    n:11243, nl:"~11,243", methods:["rs-fMRI","HALFpipe","Seed-based FC","ANCOVA","Linear Mixed-Effects","R"],
+    pop:"BD + MDD + healthy controls (47 ENIGMA sites)", vuln:true, cl:"Mood Disorders" },
+];
+
+/* ══════════════════════════════════════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════════════════════════════════════ */
+function ini(name) {
+  const p = name.trim().split(/\s+/);
+  return (p[0][0] + p[p.length-1][0]).toUpperCase();
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   TAB NAVIGATION
+══════════════════════════════════════════════════════════════════════════ */
+function showTab(v) {
+  ['overview','cst','proj'].forEach(id => {
+    document.getElementById('view-'+id).classList.toggle('on', id === v);
+    document.getElementById('t-'+id).classList.toggle('on', id === v);
+  });
+  if (v === 'cst' && !window._cstBuilt) { initConstellation(); window._cstBuilt = true; }
+  if (v === 'proj' && !window._projBuilt) { buildProjectsTab(); window._projBuilt = true; }
+  closeDetail();
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   OVERVIEW CHARTS (Plotly)
+══════════════════════════════════════════════════════════════════════════ */
+const PURPLE = '#6d28d9';
+const cfg = {displayModeBar:false, responsive:true};
+const layout_base = {
+  paper_bgcolor:'transparent', plot_bgcolor:'transparent',
+  font:{family:'Satoshi, Inter, sans-serif', color:'#3d3453', size:11},
+  margin:{t:10, b:40, l:8, r:8},
+  showlegend:false,
+};
+
+// Chart 1: projects per cluster
+(function(){
+  const counts = {};
+  DATA.forEach(d => { counts[d.cl] = (counts[d.cl]||0) + 1; });
+  const sorted = Object.entries(counts).sort((a,b) => b[1]-a[1]);
+  const labels = sorted.map(e => e[0]);
+  const vals   = sorted.map(e => e[1]);
+  const cols   = labels.map(l => CL[l]);
+  Plotly.newPlot('ch-cluster', [{
+    type:'bar', orientation:'h',
+    x:vals, y:labels,
+    marker:{color:cols, opacity:0.8},
+    text:vals, textposition:'outside',
+    hovertemplate:'%{y}: %{x}<extra></extra>',
+  }], {
+    ...layout_base,
+    margin:{t:10,b:30,l:10,r:30},
+    yaxis:{automargin:true, tickfont:{size:10}, tickcolor:'transparent'},
+    xaxis:{visible:false, range:[0, Math.max(...vals)+1]},
+    height:220,
+  }, cfg);
+})();
+
+// Chart 2: data source donut
+(function(){
+  const counts = {};
+  DATA.forEach(d => { counts[d.dsrc] = (counts[d.dsrc]||0) + 1; });
+  Plotly.newPlot('ch-dsrc', [{
+    type:'pie', hole:0.55,
+    labels:Object.keys(counts), values:Object.values(counts),
+    marker:{colors:['#6d28d9','#0e7490','#be123c']},
+    textinfo:'label+value', textfont:{size:11},
+    hovertemplate:'%{label}: %{value}<extra></extra>',
+  }], {
+    ...layout_base, height:220,
+    margin:{t:10,b:10,l:10,r:10},
+    showlegend:true,
+    legend:{orientation:'v', x:1, y:0.5, font:{size:10}},
+  }, cfg);
+})();
+
+// Chart 3: study design
+(function(){
+  const counts = {};
+  DATA.forEach(d => {
+    const key = d.design.replace(/\s*\(.*\)/,'').replace('Secondary Analysis','Secondary Analysis').trim();
+    const short = key.length > 28 ? key.slice(0,26)+'…' : key;
+    counts[short] = (counts[short]||0) + 1;
+  });
+  const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+  Plotly.newPlot('ch-design', [{
+    type:'bar', orientation:'h',
+    x:sorted.map(e=>e[1]), y:sorted.map(e=>e[0]),
+    marker:{color:PURPLE, opacity:0.7},
+    text:sorted.map(e=>e[1]), textposition:'outside',
+    hovertemplate:'%{y}: %{x}<extra></extra>',
+  }], {
+    ...layout_base,
+    margin:{t:10,b:30,l:10,r:30},
+    yaxis:{automargin:true, tickfont:{size:10}},
+    xaxis:{visible:false, range:[0, Math.max(...sorted.map(e=>e[1]))+1]},
+    height:220,
+  }, cfg);
+})();
+
+// Chart 4: top methods
+(function(){
+  const counts = {};
+  DATA.forEach(d => d.methods.forEach(m => { counts[m] = (counts[m]||0)+1; }));
+  const top = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,12);
+  Plotly.newPlot('ch-methods', [{
+    type:'bar', orientation:'h',
+    x:top.map(e=>e[1]), y:top.map(e=>e[0]),
+    marker:{color:PURPLE, opacity:0.7},
+    text:top.map(e=>e[1]), textposition:'outside',
+    hovertemplate:'%{y} used in %{x} projects<extra></extra>',
+  }], {
+    ...layout_base,
+    margin:{t:10,b:30,l:10,r:30},
+    yaxis:{automargin:true, tickfont:{size:10}},
+    xaxis:{visible:false, range:[0, top[0][1]+1.5]},
+    height:220,
+  }, cfg);
+})();
+
+/* ══════════════════════════════════════════════════════════════════════════
+   CONSTELLATION (D3 force — copied from original dashboard-1.html design)
+══════════════════════════════════════════════════════════════════════════ */
+let sim, _nodes;
+let activeCluster = null, cstQuery = '';
+
+function initConstellation() {
+  initGraph();
+}
+
+
+
+function applyCstFilter() {
+  const n = DATA.filter(d => !activeCluster || d.cl === activeCluster).length;
+  document.getElementById('cst-pcount').textContent = n;
+  d3.selectAll('.node').classed('dimmed', d => !!(activeCluster && d.cl !== activeCluster));
+}
+
+function initGraph() {
+  const container = document.getElementById('view-cst');
+  const W = container.clientWidth || window.innerWidth;
+  const H = container.clientHeight || (window.innerHeight - 52);
+
+  const svg = d3.select('#cst-canvas').attr('width', W).attr('height', H);
+  svg.selectAll('*').remove();
+
+  const blobCurve = d3.line().curve(d3.curveCatmullRomClosed.alpha(0.5));
+  const clusterKeys = Object.keys(CL);
+  const K = clusterKeys.length;
+
+  // Cluster centroids
+  const cx = {}, cy = {};
+  clusterKeys.forEach((k, i) => {
+    const ang = (i / K) * 2 * Math.PI - Math.PI / 2;
+    const R = Math.min(W, H) * (W < 640 ? 0.28 : 0.31);
+    cx[k] = W/2 + R * Math.cos(ang);
+    cy[k] = H/2 + 20 + R * Math.sin(ang);
+  });
+
+  // Size scale: sqrt scale, sample → radius
+  const sz = d3.scaleSqrt().domain([10, 20000]).range([13, 42]);
+
+  _nodes = DATA.map(p => ({
+    ...p,
+    r: sz(Math.max(p.n, 10)),
+    col: CL[p.cl],
+    x: cx[p.cl] + (Math.random()-.5)*50,
+    y: cy[p.cl] + (Math.random()-.5)*50,
+  }));
+
+  // Supervisor link pairs
+  const linkPairs = [];
+  Object.values(SUPGROUPS).forEach(ids => {
+    for (let i=0; i<ids.length; i++)
+      for (let j=i+1; j<ids.length; j++)
+        linkPairs.push({ source: ids[i]-1, target: ids[j]-1 });
+  });
+
+  const gBlob  = svg.append('g').attr('class','g-blob');
+  const gBlobL = svg.append('g').attr('class','g-blbl');
+  const gLinks = svg.append('g').attr('class','g-links');
+  const gNodes = svg.append('g').attr('class','g-nodes');
+
+  sim = d3.forceSimulation(_nodes)
+    .force('repel',   d3.forceManyBody().strength(-120))
+    .force('collide', d3.forceCollide(d => d.r + 14).strength(0.9))
+    .force('cx',      d3.forceX(d => cx[d.cl]).strength(0.30))
+    .force('cy',      d3.forceY(d => cy[d.cl]).strength(0.30))
+    .force('center',  d3.forceCenter(W/2, H/2+20).strength(0.02))
+    .on('tick', tick);
+
+  const nodeG = gNodes.selectAll('.node')
+    .data(_nodes).join('g').attr('class','node')
+    .call(d3.drag().on('start', ds).on('drag', dd).on('end', de))
+    .on('click', (ev, d) => { ev.stopPropagation(); openDetail(d); })
+    .on('mouseenter', (ev, d) => { if (!document.getElementById('detail').classList.contains('open')) showTip(ev, d); })
+    .on('mousemove',  moveTip)
+    .on('mouseleave', hideTip);
+
+  nodeG.append('circle').attr('class','bg').attr('r', d => d.r + 10);
+  nodeG.append('circle').attr('class','dot')
+    .attr('r', d => d.r)
+    .attr('fill', d => d.col).attr('fill-opacity', 0.13)
+    .attr('stroke', d => d.col).attr('stroke-width', 1.5).attr('stroke-opacity', 0.65);
+  nodeG.append('text').attr('class','ini')
+    .attr('font-size', d => Math.max(9, Math.min(14, d.r * 0.52)))
+    .attr('fill', d => d.col).attr('fill-opacity', 0.95)
+    .text(d => ini(d.student));
+
+  const linkLines = gLinks.selectAll('.sup-link')
+    .data(linkPairs).join('line').attr('class','sup-link')
+    .attr('stroke','#888888').attr('stroke-opacity',0.30)
+    .attr('stroke-width',1.2).attr('stroke-dasharray','3,4');
+
+  svg.on('click', closeDetail);
+
+  window.addEventListener('resize', () => {
+    const nW = document.getElementById('view-cst').clientWidth || window.innerWidth;
+    const nH = document.getElementById('view-cst').clientHeight || (window.innerHeight - 52);
+    svg.attr('width',nW).attr('height',nH);
+    sim.force('center', d3.forceCenter(nW/2, nH/2+20).strength(0.02)).alpha(0.3).restart();
+  });
+
+  function tick() {
+    const bW = document.getElementById('view-cst').clientWidth || window.innerWidth;
+    const bH = document.getElementById('view-cst').clientHeight || (window.innerHeight - 52);
+    _nodes.forEach(d => {
+      d.x = Math.max(d.r+18, Math.min(bW-d.r-18, d.x));
+      d.y = Math.max(d.r+18, Math.min(bH-d.r-40, d.y));
+    });
+    nodeG.attr('transform', d => `translate(${d.x},${d.y})`);
+    linkLines
+      .attr('x1', d => _nodes[d.source].x).attr('y1', d => _nodes[d.source].y)
+      .attr('x2', d => _nodes[d.target].x).attr('y2', d => _nodes[d.target].y);
+    drawBlobs(bW, bH);
+  }
+
+  function drawBlobs(bW, bH) {
+    gBlob.selectAll('*').remove();
+    gBlobL.selectAll('*').remove();
+    clusterKeys.forEach(k => {
+      const ns = _nodes.filter(n => n.cl === k);
+      const col = CL[k];
+      if (!ns.length) return;
+      let labelX, labelY;
+      if (ns.length === 1) {
+        const n = ns[0];
+        const R = n.r + 30;
+        const pts = Array.from({length:12}, (_,i) => {
+          const a = (i/12)*2*Math.PI;
+          return [n.x + R*Math.cos(a), n.y + R*Math.sin(a)];
+        });
+        gBlob.append('path').attr('d', blobCurve(pts)+'Z')
+          .attr('fill',col).attr('fill-opacity',0.08)
+          .attr('stroke',col).attr('stroke-opacity',0.18).attr('stroke-width',1);
+        labelX = n.x; labelY = n.y - R - 14;
+      } else {
+        const rawPts = ns.map(n => [n.x, n.y]);
+        const mcx = d3.mean(ns, n=>n.x), mcy = d3.mean(ns, n=>n.y);
+        const aug = ns.length < 3
+          ? [...rawPts, [mcx+1, mcy+40], [mcx-1, mcy-40]]
+          : rawPts;
+        const hull = d3.polygonHull(aug);
+        if (!hull) return;
+        const cent = d3.polygonCentroid(hull);
+        const exp = hull.map(([x,y]) => {
+          const dx=x-cent[0], dy=y-cent[1];
+          const dist=Math.sqrt(dx*dx+dy*dy)||1;
+          return [x+(dx/dist)*36, y+(dy/dist)*36];
+        });
+        gBlob.append('path').attr('d', blobCurve(exp)+'Z')
+          .attr('fill',col).attr('fill-opacity',0.07)
+          .attr('stroke',col).attr('stroke-opacity',0.15).attr('stroke-width',1);
+        labelX = cent[0];
+        labelY = Math.min(...exp.map(p=>p[1])) - 14;
+      }
+      // Clamp label — stay below top header, above legend
+      labelY = Math.max(30, Math.min(bH - 80, labelY));
+      gBlobL.append('text').attr('class','c-label')
+        .attr('x', labelX).attr('y', labelY)
+        .attr('text-anchor','middle')
+        .attr('fill', col).attr('fill-opacity', 0.85)
+        .attr('font-size', 9.5)
+        .attr('font-family', 'Satoshi, Inter, sans-serif')
+        .attr('font-weight', '700')
+        .attr('letter-spacing','0.10em')
+        .text(k.toUpperCase());
+    });
+  }
+}
+
+function ds(ev,d){ if(!ev.active) sim.alphaTarget(0.3).restart(); d.fx=d.x; d.fy=d.y; }
+function dd(ev,d){ d.fx=ev.x; d.fy=ev.y; }
+function de(ev,d){ if(!ev.active) sim.alphaTarget(0); d.fx=null; d.fy=null; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   PROJECTS TAB
+══════════════════════════════════════════════════════════════════════════ */
+let projCluster = null, projQuery = '', projDsrc = '', projDtype = '', projVuln = '';
+
+function buildProjectsTab() {
+  window._projBuilt = true;
+  // Filter chips
+  const wrap = document.getElementById('proj-filters');
+  wrap.innerHTML = '';
+  Object.entries(CL).forEach(([name, color]) => {
+    const b = document.createElement('button');
+    b.className = 'fp on'; b.textContent = name; b.dataset.c = name;
+    b.style.borderColor = color; b.style.color = color;
+    b.addEventListener('click', () => {
+      projCluster = projCluster === name ? null : name;
+      document.querySelectorAll('.fp').forEach(p =>
+        p.classList.toggle('on', !projCluster || p.dataset.c === projCluster));
+      renderCards();
+    });
+    wrap.appendChild(b);
+  });
+  // Search
+  document.getElementById('proj-search').addEventListener('input', function() {
+    projQuery = this.value.toLowerCase().trim(); renderCards();
+  });
+  document.getElementById('filter-dsrc').addEventListener('change', function() {
+    projDsrc = this.value; renderCards();
+  });
+  document.getElementById('filter-dtype').addEventListener('change', function() {
+    projDtype = this.value; renderCards();
+  });
+  document.getElementById('filter-vuln').addEventListener('change', function() {
+    projVuln = this.value; renderCards();
+  });
+  renderCards();
+}
+
+function projVis(d) {
+  const cm  = !projCluster || d.cl === projCluster;
+  const qm  = !projQuery ||
+    d.student.toLowerCase().includes(projQuery) ||
+    d.title.toLowerCase().includes(projQuery) ||
+    d.cl.toLowerCase().includes(projQuery) ||
+    d.supervisor.toLowerCase().includes(projQuery);
+  const dm  = !projDsrc  || d.dsrc  === projDsrc;
+  const dtm = !projDtype || d.dtype === projDtype;
+  const vm  = !projVuln  ||
+    (projVuln === 'vuln' && d.vuln) ||
+    (projVuln === 'nonvuln' && !d.vuln);
+  return cm && qm && dm && dtm && vm;
+}
+
+function renderCards() {
+  const grid = document.getElementById('proj-grid');
+  grid.innerHTML = '';
+  const visible = DATA.filter(projVis).sort((a,b)=>a.student.localeCompare(b.student));
+  const n = visible.length;
+  document.getElementById('proj-count').textContent = n + ' project' + (n!==1?'s':'');
+  if (!n) {
+    grid.innerHTML = '<div class="no-results"><div style="font-size:2rem;margin-bottom:0.75rem">🔍</div><p>No projects match these filters.</p></div>';
+    return;
+  }
+  visible.forEach(d => {
+    const col = CL[d.cl];
+    const srcClass = d.dsrc==='Primary' ? 'badge-primary' : d.dsrc==='Mixed' ? 'badge-mixed' : 'badge-secondary';
+    const card = document.createElement('div');
+    card.className = 'project-card';
+    card.innerHTML = `
+      <div class="card-header">
+        <span class="card-cluster-label" style="color:${col}">${d.cl}</span>
+        <div class="card-badges">
+          <span class="badge ${srcClass}">${d.dsrc}</span>
+          <span class="badge" style="background:color-mix(in oklab,${col} 10%,#fff);color:${col}">${d.dtype === 'Quantitative' ? 'Quant' : d.dtype === 'Qualitative' ? 'Qual' : d.dtype}</span>
+          ${d.vuln ? '<span class="badge badge-vuln">Vuln.</span>' : ''}
+        </div>
+      </div>
+      <div class="card-student">${d.student}</div>
+      <div class="card-title">${d.title}</div>
+      <div class="card-divider"></div>
+      <div class="card-meta">
+        <div class="card-row"><span class="card-row-label">Supervisor</span><span class="card-row-value">${d.supervisor}</span></div>
+        <div class="card-row"><span class="card-row-label">Design</span><span class="card-row-value">${d.design.replace(/\s*\(.*\)/,'').trim()}</span></div>
+        <div class="card-row"><span class="card-row-label">Sample</span><span class="card-row-value">${d.nl}</span></div>
+        <div class="card-row"><span class="card-row-label">Population</span><span class="card-row-value">${d.pop}</span></div>
+        <div class="card-row"><span class="card-row-label">Methods</span><span class="card-row-value">${d.methods.slice(0,3).join(' · ')}</span></div>
+      </div>
+    `;
+    card.addEventListener('click', () => openDetail(d));
+    grid.appendChild(card);
+  });
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   DETAIL PANEL
+══════════════════════════════════════════════════════════════════════════ */
+function openDetail(d) {
+  hideTip();
+  const col = d.col || CL[d.cl];
+  // Dim constellation nodes if visible
+  if (window._cstBuilt) {
+    d3.selectAll('.node').classed('dimmed', n => n.id !== d.id);
+  }
+  document.getElementById('di').innerHTML = `
+    <div class="d-badge" style="border-color:${col};color:${col}">${d.cl}</div>
+    <div class="d-title">${d.title}</div>
+    <div class="d-student" style="color:${col}">${d.student}</div>
+    <div class="d-super">${d.supervisor}</div>
+    <div class="d-hr"></div>
+    <div class="d-kv">
+      <div class="d-k">Sample</div>
+      <div class="d-v"><div class="d-big" style="color:${col}">${d.nl}</div></div>
+    </div>
+    <div class="d-kv"><div class="d-k">Design</div><div class="d-v">${d.design}</div></div>
+    <div class="d-kv"><div class="d-k">Data</div><div class="d-v">${d.dtype} · ${d.dsrc}</div></div>
+    <div class="d-kv"><div class="d-k">Population</div><div class="d-v">${d.pop}</div></div>
+    <div class="d-hr"></div>
+    <div class="d-kv"><div class="d-k">Methods</div>
+      <div class="d-v"><div class="d-pills">${d.methods.map(m=>`<span class="d-pill">${m}</span>`).join('')}</div></div>
+    </div>
+    ${d.vuln ? '<div class="d-hr"></div><div style="font-size:0.75rem;color:#b45309;padding:0.35rem 0.5rem;background:#fef3c7;border-radius:0.375rem;">⚠ Vulnerable population · ethics approved</div>' : ''}
+  `;
+  document.getElementById('detail').classList.add('open');
+}
+
+function closeDetail() {
+  document.getElementById('detail').classList.remove('open');
+  if (window._cstBuilt) d3.selectAll('.node').classed('dimmed', false);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   TOOLTIP
+══════════════════════════════════════════════════════════════════════════ */
+function showTip(ev, d) {
+  const t = document.getElementById('tip');
+  t.innerHTML = `<div class="t-name">${d.student}</div><div class="t-short">${d.short}</div>`;
+  t.style.display = 'block';
+  moveTip(ev);
+}
+function moveTip(ev) {
+  const t = document.getElementById('tip');
+  const x = ev.clientX + 14, y = ev.clientY - 10;
+  t.style.left = Math.min(x, window.innerWidth - 240) + 'px';
+  t.style.top  = Math.max(10, y) + 'px';
+}
+function hideTip() {
+  document.getElementById('tip').style.display = 'none';
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   KEYBOARD
+══════════════════════════════════════════════════════════════════════════ */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeDetail();
+});
+</script>
+</body>
+</html>
