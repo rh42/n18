@@ -8,6 +8,12 @@
 <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700&display=swap" rel="stylesheet">
 
 <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+
+<script
+  data-goatcounter="https://rh42.goatcounter.com/count"
+  async
+  src="//gc.zgo.at/count.js"></script>
+
 <style>
 /* ── TOKENS ─────────────────────────────────────────────────────────────── */
 :root {
@@ -574,7 +580,13 @@ footer a{color:var(--primary);text-decoration:none}
   <footer>
   <em>Built by Robin L @jelliwolf with HTML and D3.js.</em><br>
   This dashboard has not been pre-registered · n=18 is technically enough for a Wilcoxon · All blobs are convex hulls, just like our coping strategies.<br>
-  For a less evidence-based experience, try <a href="https://rhplayground.shinyapps.io/lucid/" target="_blank" rel="noopener noreferrer">Institute of Questionable Neuroclarity</a>.
+  For a less evidence-based experience, try <a href="https://rhplayground.shinyapps.io/lucid/" target="_blank" 
+  rel="noopener noreferrer"
+
+  data-goatcounter-click="footer-institute-link"
+   data-goatcounter-title="Footer: Institute of Questionable Neuroclarity">
+
+  Institute of Questionable Neuroclarity</a>.
 </footer>
 </div>
 
@@ -1082,6 +1094,16 @@ function renderCards() {
 function openDetail(d) {
   hideTip();
   const col = d.col || CL[d.cl];
+
+  // one event per opened project for analytics
+  if (window.goatcounter && typeof window.goatcounter.count === 'function') {
+    window.goatcounter.count({
+      path: 'project-open-' + d.student.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
+      title: 'Project opened: ' + d.student,
+      event: true
+    });
+  }
+
   if (window._cstBuilt) {
     d3.selectAll('.node').classed('dimmed', n => n.id !== d.id);
   }
