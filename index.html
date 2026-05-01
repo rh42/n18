@@ -548,6 +548,13 @@ function initGraph() {
   const svg = d3.select('#cst-canvas').attr('width', W).attr('height', H);
   svg.selectAll('*').remove();
 
+  // ADD BLUR FILTER:
+svg.append('defs').html(`
+  <filter id="blob-blur" x="-50%" y="-50%" width="200%" height="200%">
+    <feGaussianBlur in="SourceGraphic" stdDeviation="20"/>
+  </filter>
+`);
+
   const blobCurve = d3.line().curve(d3.curveCatmullRomClosed.alpha(0.5));
   const clusterKeys = Object.keys(CL);
   const K = clusterKeys.length;
@@ -580,7 +587,7 @@ function initGraph() {
         linkPairs.push({ source: ids[i]-1, target: ids[j]-1 });
   });
 
-  const gBlob  = svg.append('g').attr('class','g-blob');
+  const gBlob  = svg.append('g').attr('class','g-blob').attr('filter','url(#blob-blur)');
   const gBlobL = svg.append('g').attr('class','g-blbl');
   const gLinks = svg.append('g').attr('class','g-links');
   const gNodes = svg.append('g').attr('class','g-nodes');
@@ -655,8 +662,7 @@ function initGraph() {
           return [n.x + R*Math.cos(a), n.y + R*Math.sin(a)];
         });
         gBlob.append('path').attr('d', blobCurve(pts)+'Z')
-          .attr('fill',col).attr('fill-opacity',0.08)
-          .attr('stroke',col).attr('stroke-opacity',0.18).attr('stroke-width',1);
+  .attr('fill',col).attr('fill-opacity',0.25);
         labelX = n.x; labelY = n.y - R - 14;
       } else {
         const rawPts = ns.map(n => [n.x, n.y]);
@@ -673,8 +679,8 @@ function initGraph() {
           return [x+(dx/dist)*36, y+(dy/dist)*36];
         });
         gBlob.append('path').attr('d', blobCurve(exp)+'Z')
-          .attr('fill',col).attr('fill-opacity',0.07)
-          .attr('stroke',col).attr('stroke-opacity',0.15).attr('stroke-width',1);
+        .attr('fill',col).attr('fill-opacity',0.22);
+
         labelX = cent[0];
         labelY = Math.min(...exp.map(p=>p[1])) - 14;
       }
