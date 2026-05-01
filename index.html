@@ -8,7 +8,6 @@
 <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700&display=swap" rel="stylesheet">
 
 <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
-<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
 <style>
 /* ── TOKENS ─────────────────────────────────────────────────────────────── */
 :root {
@@ -77,6 +76,8 @@ input{font:inherit;color:inherit}
   text-decoration:none;color:var(--text);
   position:relative;
   z-index:2;
+  appearance:none;
+  cursor:pointer;
 }
 
 .logo-text{
@@ -127,7 +128,7 @@ main{max-width:1200px;margin:0 auto;padding:clamp(1.5rem,4vw,2.5rem) clamp(1rem,
 #landing.exiting{
   opacity:0;
   pointer-events:none;
-  transition:opacity 2000ms ease-out;
+  transition:opacity 2400ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 #landing.hidden{
@@ -187,13 +188,6 @@ main{max-width:1200px;margin:0 auto;padding:clamp(1.5rem,4vw,2.5rem) clamp(1rem,
     transform 900ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.landing-hint{
-  margin-top:1.15rem;
-  font-size:0.78rem;
-  color:var(--dim);
-  opacity:0.8;
-}
-
 .ambient-line{
   opacity:.16;
   pointer-events:none;
@@ -203,13 +197,18 @@ main{max-width:1200px;margin:0 auto;padding:clamp(1.5rem,4vw,2.5rem) clamp(1rem,
   opacity:.20;
   filter:blur(18px);
   pointer-events:none;
-  transition:transform 260ms ease, opacity 260ms ease;
+  transition:
+    transform 2400ms cubic-bezier(0.16, 1, 0.3, 1),
+    opacity   2000ms ease-out;
   transform-origin:center;
 }
 
 .entry-node{
   cursor:pointer;
   outline:none;
+  transition:
+    transform 1800ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity   1800ms ease-out;
 }
 
 .entry-node .hit{
@@ -243,8 +242,10 @@ main{max-width:1200px;margin:0 auto;padding:clamp(1.5rem,4vw,2.5rem) clamp(1rem,
 
 #landing.exiting .landing-core{
   opacity:0;
-  transform:translateY(-6px);
-  transition:opacity 900ms ease, transform 900ms ease;
+  transform:translateY(-38px);
+  transition:
+    opacity   900ms ease-out,
+    transform 1400ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 #landing.exiting .entry-node.n1{ transform:translate(-18px,-16px) scale(1.05); opacity:0.12; }
@@ -303,7 +304,7 @@ main{max-width:1200px;margin:0 auto;padding:clamp(1.5rem,4vw,2.5rem) clamp(1rem,
 #detail::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.08);border-radius:2px}
 .d-close{
   position:absolute;top:12px;right:12px;
-  width:26px;height:26px;border-radius:50%;
+  width:36px;height:36px;border-radius:50%;
   background:var(--bg2);border:1px solid var(--border);
   color:var(--dim);font-size:12px;
   display:flex;align-items:center;justify-content:center;
@@ -413,7 +414,6 @@ footer a{color:var(--primary);text-decoration:none}
   .tab{padding:0.3rem 0.6rem;font-size:0.8rem}
   .landing-title{font-size:clamp(2.5rem, 13vw, 4rem)}
   .landing-sub{font-size:0.88rem;max-width:20rem}
-  .landing-hint{font-size:0.72rem}
 }
 </style>
 </head>
@@ -421,7 +421,7 @@ footer a{color:var(--primary);text-decoration:none}
 
 <!-- ── HEADER ─────────────────────────────────────────────────────────── -->
 <header id="hdr" role="banner">
-  <a class="logo" href="#" onclick="replayLanding();return false" aria-label="Replay 18 Minds landing">
+  <button class="logo" onclick="replayLanding()" aria-label="Replay 18 Minds landing">
     <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
       <circle cx="14" cy="14" r="12" stroke="currentColor" stroke-width="1.5"/>
       <circle cx="14" cy="14" r="4" fill="currentColor" opacity=".25"/>
@@ -434,7 +434,7 @@ footer a{color:var(--primary);text-decoration:none}
       <line x1="20" y1="19" x2="14" y2="14" stroke="currentColor" stroke-width=".8" stroke-opacity=".35" stroke-dasharray="2,2"/>
     </svg>
     <span class="logo-text">18 Minds</span>
-  </a>
+</button>
   <nav role="navigation" aria-label="Main tabs">
     <button class="tab on" onclick="showTab('cst')" id="t-cst">Constellation</button>
     <button class="tab" onclick="showTab('proj')" id="t-proj">Projects</button>
@@ -641,7 +641,7 @@ const DATA = [
     design:"Qualitative Semi-Structured Interviews", dtype:"Qualitative", dsrc:"Primary",
     n:12, nl:"10–15 (planned)", methods:["Thematic Analysis","NVivo"],
     pop:"Women with chronic pain (Ireland)", vuln:true, cl:"Mental Health & Crisis" },
-  { id:6,  student:"Niamh Woods",                    supervisor:"Tom Burke",
+  { id:6,  student:"Niamh Woods",                    supervisor:"Dr. Tom Burke",
     title:"Returning to Work with Angiogram Negative Subarachnoid Haemorrhage",
     short:"Cognitive & psychological barriers to work return after anSAH stroke",
     design:"Cross-Sectional + Case-Matched Control", dtype:"Quantitative", dsrc:"Primary",
@@ -653,7 +653,7 @@ const DATA = [
     design:"Secondary Analysis (SOCIAbLE)", dtype:"Quantitative", dsrc:"Secondary",
     n:32, nl:"32", methods:["BLERT","RMET","CANTAB ERT","AIHQ","SOFAS","Regression"],
     pop:"Adults with childhood adversity (community)", vuln:true, cl:"Social & Cognitive Neuro" },
-  { id:8,  student:"Lauren O'Keeffe",                supervisor:"Gary Donohoe",
+  { id:8,  student:"Lauren O'Keeffe",                supervisor:"Prof. Gary Donohoe",
     title:"Childhood Trauma and Stress Reactivity: Structural Brain Differences in Schizophrenia and Healthy Controls",
     short:"MRI of amygdala / ACC / hippocampus in schizophrenia with childhood trauma (iRELATE)",
     design:"Cross-Sectional Secondary (iRELATE)", dtype:"Quantitative", dsrc:"Secondary",
@@ -787,21 +787,27 @@ function openLanding() {
 
   landingSublineTimer = setTimeout(() => {
     landing.classList.add('subline-in');
-  }, 350);
+  }, 550);
 }
-
-function startLandingSequence() {
-  openLanding();
-}
+  
 
 function enterConstellation() {
   if (enteringConstellation) return;
   enteringConstellation = true;
 
+  // Pre-build the constellation while the landing is still fading
+  if (!window._cstBuilt) {
+    document.getElementById('view-cst').classList.add('on');
+    document.getElementById('t-cst').classList.add('on');
+    initConstellation();
+    window._cstBuilt = true;
+  }
+
   const landing = document.getElementById('landing');
   landing.classList.add('exiting');
 
   landingExitTimer = setTimeout(() => {
+    // showTab will find _cstBuilt = true and skip reinit, just finalises tab state
     showTab('cst');
     landing.classList.add('hidden');
     enteringConstellation = false;
@@ -816,7 +822,6 @@ function replayLanding() {
    CONSTELLATION
 ══════════════════════════════════════════════════════════════════════════ */
 let sim, _nodes;
-let activeCluster = null, cstQuery = '';
 
 function initConstellation() {
   initGraph();
@@ -1133,9 +1138,8 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeDetail();
 });
 
-window.addEventListener('load', () => {
-  startLandingSequence();
-});
+window.addEventListener('load', openLanding);
+
 </script>
 </body>
 </html>
