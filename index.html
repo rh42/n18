@@ -41,10 +41,17 @@
 }
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;scroll-behavior:smooth;
-font-size:18px;}
-body{min-height:100dvh;font-family:var(--font);font-size:1rem;font-weight:500;
-  color:var(--text);background:var(--bg);line-height:1.6; overflow-x: hidden; /* new: stop tiny horizontal overflow */}
+html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;scroll-behavior:smooth;font-size:18px}
+body{
+  min-height:100dvh;
+  font-family:var(--font);
+  font-size:1rem;
+  font-weight:500;
+  color:var(--text);
+  background:var(--bg);
+  line-height:1.6;
+  overflow-x:hidden
+}
 img,svg{display:block;max-width:100%}
 button{cursor:pointer;background:none;border:none;font:inherit;color:inherit}
 input{font:inherit;color:inherit}
@@ -56,18 +63,39 @@ input{font:inherit;color:inherit}
   position:sticky;top:0;z-index:100;
   background:rgba(247,246,242,0.92);backdrop-filter:blur(12px);
   border-bottom:1px solid var(--border);
-  height:52px;display:flex;align-items:center;
-  padding:0 clamp(1rem,3vw,2rem);gap:2rem;
+  height:52px;
+  padding:0 clamp(1rem,3vw,2rem);
+  display:grid;
+  grid-template-columns:1fr auto 1fr;
+  align-items:center;
 }
-.logo{display:flex;align-items:center;gap:0.6rem;flex-shrink:0;text-decoration:none;color:var(--text)}
-.logo svg{color:var(--primary)}
-.logo-text{font-size:0.9rem;font-weight:700;letter-spacing:-0.01em;line-height:1.1}
-.logo-sub{font-size:0.7rem;color:var(--dim);font-weight:400;display:block}
-nav{display:flex;gap:0.25rem;flex:1;justify-content:center}
+
+.logo{
+  display:flex;align-items:center;gap:0.6rem;
+  justify-self:start;
+  flex-shrink:0;
+  text-decoration:none;color:var(--text);
+  position:relative;
+  z-index:2;
+}
+
+.logo-text{
+  font-size:0.9rem;
+  font-weight:700;
+  letter-spacing:-0.01em;
+  line-height:1.1;
+}
+
+nav{
+  display:flex;
+  gap:0.25rem;
+  justify-self:center;
+  align-items:center;
+}
 .tab{
   padding:0.35rem 0.9rem;font-size:0.85rem;font-weight:500;
   border-radius:var(--r-full);color:var(--dim);
-  transition:background var(--t),color var(--t);
+  transition:background var(--t),color var(--t),opacity var(--t);
   white-space:nowrap;
 }
 .tab:hover{background:var(--bg2);color:var(--sub)}
@@ -78,39 +106,181 @@ nav{display:flex;gap:0.25rem;flex:1;justify-content:center}
 .view.on{display:block}
 main{max-width:1200px;margin:0 auto;padding:clamp(1.5rem,4vw,2.5rem) clamp(1rem,3vw,2rem) 4rem}
 
-/* ── OVERVIEW ───────────────────────────────────────────────────────────── */
-.kpi-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1rem;margin-bottom:2rem}
-.kpi{
-  background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);
-  padding:1.1rem 1.25rem;box-shadow:var(--sh-sm);
+/* ── LANDING ────────────────────────────────────────────────────────────── */
+#landing{
+  position:fixed;
+  inset:0;
+  z-index:500;
+  background:
+    radial-gradient(circle at 15% 18%, rgba(109,40,217,0.08), transparent 28%),
+    radial-gradient(circle at 78% 22%, rgba(29,78,216,0.08), transparent 25%),
+    radial-gradient(circle at 28% 78%, rgba(14,116,144,0.08), transparent 27%),
+    radial-gradient(circle at 68% 74%, rgba(190,18,60,0.06), transparent 24%),
+    linear-gradient(180deg, #fbfaf7 0%, #f7f6f2 58%, #f1eee8 100%);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  opacity:1;
 }
-.kpi-val{
-  font-family:var(--mono);font-size:2rem;font-weight:300;line-height:1;
-  color:var(--primary);font-variant-numeric:tabular-nums;margin-bottom:0.3rem;
+
+#landing.exiting{
+  opacity:0;
+  pointer-events:none;
+  transition:opacity 2000ms ease-out;
 }
-.kpi-lbl{font-size:0.78rem;color:var(--sub);font-weight:500;letter-spacing:0.02em}
-.kpi-sub{font-size:0.7rem;color:var(--dim);margin-top:0.15rem}
 
+#landing.hidden{
+  display:none;
+}
 
-@media(max-width:720px){}
+.landing-visual{
+  position:absolute;
+  inset:0;
+}
 
+.landing-visual svg{
+  width:100%;
+  height:100%;
+}
 
+.landing-core{
+  position:relative;
+  z-index:2;
+  text-align:center;
+  padding:2rem;
+  max-width:760px;
+}
 
+.landing-kicker{
+  display:inline-block;
+  font-size:0.72rem;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  color:var(--dim);
+  margin-bottom:1rem;
+}
+
+.landing-title{
+  font-size:clamp(3rem, 8vw, 6.3rem);
+  line-height:0.95;
+  letter-spacing:-0.05em;
+  font-weight:700;
+  color:var(--text);
+}
+
+.landing-sub{
+  margin:1rem auto 0;
+  max-width:34rem;
+  font-size:0.95rem;
+  color:var(--sub);
+  line-height:1.65;
+  opacity:0;
+  transform:translateY(8px);
+}
+
+#landing.subline-in .landing-sub{
+  opacity:1;
+  transform:translateY(0);
+  transition:
+    opacity 900ms ease,
+    transform 900ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.landing-hint{
+  margin-top:1.15rem;
+  font-size:0.78rem;
+  color:var(--dim);
+  opacity:0.8;
+}
+
+.ambient-line{
+  opacity:.16;
+  pointer-events:none;
+}
+
+.ambient-halo{
+  opacity:.20;
+  filter:blur(18px);
+  pointer-events:none;
+  transition:transform 260ms ease, opacity 260ms ease;
+  transform-origin:center;
+}
+
+.entry-node{
+  cursor:pointer;
+  outline:none;
+}
+
+.entry-node .hit{
+  fill:transparent;
+  pointer-events:all;
+}
+
+.entry-soft{
+  pointer-events:none;
+}
+
+.entry-soft-blur{
+  opacity:.22;
+  filter:blur(16px);
+}
+
+.entry-soft-core{
+  opacity:.16;
+  filter:blur(6px);
+}
+
+.entry-node:hover .entry-soft-blur,
+.entry-node:focus-visible .entry-soft-blur{
+  opacity:.28;
+}
+
+.entry-node:hover .entry-soft-core,
+.entry-node:focus-visible .entry-soft-core{
+  opacity:.20;
+}
+
+#landing.exiting .landing-core{
+  opacity:0;
+  transform:translateY(-6px);
+  transition:opacity 900ms ease, transform 900ms ease;
+}
+
+#landing.exiting .entry-node.n1{ transform:translate(-18px,-16px) scale(1.05); opacity:0.12; }
+#landing.exiting .entry-node.n2{ transform:translate(-14px,-10px) scale(1.04); opacity:0.12; }
+#landing.exiting .entry-node.n3{ transform:translate(-6px,-18px) scale(1.04); opacity:0.12; }
+#landing.exiting .entry-node.n4{ transform:translate(10px,-14px) scale(1.05); opacity:0.12; }
+#landing.exiting .entry-node.n5{ transform:translate(18px,-10px) scale(1.05); opacity:0.12; }
+#landing.exiting .entry-node.n6{ transform:translate(-14px,12px) scale(1.04); opacity:0.12; }
+#landing.exiting .entry-node.n7{ transform:translate(16px,14px) scale(1.05); opacity:0.12; }
+#landing.exiting .entry-node.n8{ transform:translate(0,18px) scale(1.04); opacity:0.12; }
+
+#landing.exiting .ambient-halo.h1{ transform:translate(-14px,-12px) scale(1.05); opacity:0.08; }
+#landing.exiting .ambient-halo.h2{ transform:translate(14px,-10px) scale(1.05); opacity:0.08; }
+#landing.exiting .ambient-halo.h3{ transform:translate(12px,14px) scale(1.05); opacity:0.08; }
+#landing.exiting .ambient-halo.h4{ transform:translate(-12px,12px) scale(1.04); opacity:0.08; }
+#landing.exiting .ambient-halo.h5{ transform:translate(0,-14px) scale(1.04); opacity:0.08; }
+#landing.exiting .ambient-halo.h6{ transform:translate(0,14px) scale(1.04); opacity:0.08; }
 
 /* ── CONSTELLATION ──────────────────────────────────────────────────────── */
-#view-cst{position:relative;height:calc(100dvh - 52px);overflow:hidden;background:var(--bg)}
+#view-cst{
+  position:relative;
+  height:calc(100dvh - 52px);
+  overflow:hidden;
+  background:var(--bg);
+}
 
 #cst-hdr{
   position:absolute;top:14px;left:50%;transform:translateX(-50%);
-  z-index:20;display:flex;align-items:center;gap:0.5rem;
-  background:rgba(247,246,242,0.88);backdrop-filter:blur(10px);
-  border:1px solid var(--border);border-radius:var(--r-full);
-  padding:0.35rem 0.75rem;
+  z-index:20;
+  display:flex;flex-direction:column;align-items:center;gap:0.15rem;
+  text-align:center;
 }
-#cst-hdr span{font-size:0.75rem;color:var(--dim);font-weight:500}
-#cst-pcount{color:var(--sub);font-weight:600}
-
-
+#cst-hdr span{
+  font-size:0.72rem;color:var(--dim);font-weight:500;
+  line-height:1.4;
+}
 
 #cst-canvas{width:100%;height:100%;display:block}
 .node{cursor:pointer}
@@ -144,7 +314,7 @@ main{max-width:1200px;margin:0 auto;padding:clamp(1.5rem,4vw,2.5rem) clamp(1rem,
   display:inline-block;font-size:0.7rem;letter-spacing:0.09em;text-transform:uppercase;
   padding:0.2rem 0.6rem;border-radius:var(--r-full);border:1px solid;margin-bottom:0.75rem;
 }
-.d-title{font-family:var(--serif);font-size:0.95rem;font-weight:500;line-height:1.5;margin-bottom:0.75rem;color:var(--text)}
+.d-title{font-size:0.95rem;font-weight:500;line-height:1.5;margin-bottom:0.75rem;color:var(--text)}
 .d-student{font-size:1rem;font-weight:700;margin-bottom:0.25rem;color:var(--text)}
 .d-super{font-size:0.8rem;color:var(--dim);margin-bottom:1rem}
 .d-hr{height:1px;background:var(--divider);margin:0.75rem 0}
@@ -162,7 +332,7 @@ main{max-width:1200px;margin:0 auto;padding:clamp(1.5rem,4vw,2.5rem) clamp(1rem,
   padding:0.6rem 0.8rem;box-shadow:var(--sh-md);max-width:220px;display:none;
 }
 .t-name{font-size:0.82rem;font-weight:700;color:var(--text);margin-bottom:0.2rem}
-.t-short{font-family:var(--serif);font-size:0.75rem;color:var(--dim);line-height:1.4}
+.t-short{font-size:0.75rem;color:var(--dim);line-height:1.4}
 
 /* ── PROJECTS ───────────────────────────────────────────────────────────── */
 #view-proj main{padding-top:1.5rem}
@@ -238,10 +408,12 @@ footer a{color:var(--primary);text-decoration:none}
 
 /* ── MOBILE ─────────────────────────────────────────────────────────────── */
 @media(max-width:480px){
-  .kpi-val{font-size:1.6rem}
   #detail{width:calc(100vw - 24px);right:-120vw}
   #detail.open{right:12px}
   .tab{padding:0.3rem 0.6rem;font-size:0.8rem}
+  .landing-title{font-size:clamp(2.5rem, 13vw, 4rem)}
+  .landing-sub{font-size:0.88rem;max-width:20rem}
+  .landing-hint{font-size:0.72rem}
 }
 </style>
 </head>
@@ -249,7 +421,7 @@ footer a{color:var(--primary);text-decoration:none}
 
 <!-- ── HEADER ─────────────────────────────────────────────────────────── -->
 <header id="hdr" role="banner">
-  <a class="logo" href="#" onclick="showTab('overview');return false" aria-label="n=18 home">
+  <a class="logo" href="#" onclick="replayLanding();return false" aria-label="Replay 18 Minds landing">
     <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
       <circle cx="14" cy="14" r="12" stroke="currentColor" stroke-width="1.5"/>
       <circle cx="14" cy="14" r="4" fill="currentColor" opacity=".25"/>
@@ -264,43 +436,106 @@ footer a{color:var(--primary);text-decoration:none}
     <span class="logo-text">18 Minds</span>
   </a>
   <nav role="navigation" aria-label="Main tabs">
-    <button class="tab on" onclick="showTab('overview')" id="t-overview">Overview</button>
-    <button class="tab" onclick="showTab('cst')" id="t-cst">Constellation</button>
+    <button class="tab on" onclick="showTab('cst')" id="t-cst">Constellation</button>
     <button class="tab" onclick="showTab('proj')" id="t-proj">Projects</button>
   </nav>
 </header>
 
-<!-- ── OVERVIEW ───────────────────────────────────────────────────────── -->
-<div class="view on" id="view-overview" role="main">
-  <main>
-    <div class="sect-hdr">
-      <h1>18 Minds at a Glance</h1>
-      <p>MSc Clinical Neuroscience · 18 thesis projects · 2025–26</p>
-    </div>
-    <div class="kpi-row">
-      <div class="kpi"><div class="kpi-val">18</div><div class="kpi-lbl">Projects</div><div class="kpi-sub">In this cohort</div></div>
-      <div class="kpi"><div class="kpi-val">8</div><div class="kpi-lbl">Clusters</div><div class="kpi-sub">Research areas</div></div>
-      <div class="kpi"><div class="kpi-val">12</div><div class="kpi-lbl">Supervisors</div><div class="kpi-sub">+ co-supervisors</div></div>
-      <div class="kpi"><div class="kpi-val">13</div><div class="kpi-lbl">Secondary Data</div><div class="kpi-sub">72% of cohort</div></div>
-      <div class="kpi"><div class="kpi-val">12</div><div class="kpi-lbl">Vulnerable Pops</div><div class="kpi-sub">Ethics approved</div></div>
-      <div class="kpi"><div class="kpi-val">2</div><div class="kpi-lbl">Qual / Mixed</div><div class="kpi-sub">16 quantitative</div></div>
-    </div>
-    
-  </main>
-  <footer>
-    <em>Built by Robin L with Python, HTML &amp; repressed thesis anxiety.</em><br>
-    All nodes are statistically significant (p &lt; .05 for being impressive).<br>
-    This dashboard has not been pre-registered · n=18 is technically enough for a Wilcoxon.
-  </footer>
+<!-- ── LANDING ────────────────────────────────────────────────────────── -->
+<div id="landing" aria-label="18 Minds landing">
+  <div class="landing-visual">
+    <svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <defs>
+        <filter id="landing-blur" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur stdDeviation="18"></feGaussianBlur>
+        </filter>
+      </defs>
+
+      <g filter="url(#landing-blur)">
+        <circle class="ambient-halo h1" cx="250" cy="250" r="120" fill="#6D28D9"></circle>
+        <circle class="ambient-halo h2" cx="1140" cy="240" r="110" fill="#1D4ED8"></circle>
+        <circle class="ambient-halo h3" cx="980" cy="630" r="120" fill="#0E7490"></circle>
+        <circle class="ambient-halo h4" cx="380" cy="680" r="95" fill="#BE123C"></circle>
+        <circle class="ambient-halo h5" cx="690" cy="170" r="88" fill="#047857"></circle>
+        <circle class="ambient-halo h6" cx="720" cy="760" r="92" fill="#B45309"></circle>
+      </g>
+
+      <g stroke-linecap="round" fill="none">
+        <line class="ambient-line" x1="250" y1="250" x2="440" y2="340" stroke="#6D28D9" stroke-width="1.4" stroke-dasharray="4 8"></line>
+        <line class="ambient-line" x1="440" y1="340" x2="690" y2="170" stroke="#0E7490" stroke-width="1.2" stroke-dasharray="4 8"></line>
+        <line class="ambient-line" x1="690" y1="170" x2="920" y2="300" stroke="#047857" stroke-width="1.2" stroke-dasharray="4 8"></line>
+        <line class="ambient-line" x1="920" y1="300" x2="1140" y2="240" stroke="#1D4ED8" stroke-width="1.4" stroke-dasharray="4 8"></line>
+        <line class="ambient-line" x1="440" y1="340" x2="380" y2="680" stroke="#BE123C" stroke-width="1.2" stroke-dasharray="4 8"></line>
+        <line class="ambient-line" x1="920" y1="300" x2="980" y2="630" stroke="#0E7490" stroke-width="1.2" stroke-dasharray="4 8"></line>
+        <line class="ambient-line" x1="380" y1="680" x2="720" y2="760" stroke="#B45309" stroke-width="1.2" stroke-dasharray="4 8"></line>
+      </g>
+
+      <g class="entry-node n1" tabindex="0" role="button" aria-label="Enter constellation" onclick="enterConstellation()" onkeydown="handleLandingKey(event)">
+  <circle class="entry-soft entry-soft-blur" cx="250" cy="250" r="34" fill="#6D28D9"></circle>
+  <circle class="entry-soft entry-soft-core" cx="250" cy="250" r="18" fill="#6D28D9"></circle>
+  <circle class="hit" cx="250" cy="250" r="40"></circle>
+</g>
+
+        <g class="entry-node n2" tabindex="0" role="button" aria-label="Enter constellation" onclick="enterConstellation()" onkeydown="handleLandingKey(event)">
+  <circle class="entry-soft entry-soft-blur" cx="440" cy="340" r="24" fill="#BE123C"></circle>
+  <circle class="entry-soft entry-soft-core" cx="440" cy="340" r="13" fill="#BE123C"></circle>
+  <circle class="hit" cx="440" cy="340" r="30"></circle>
+</g>
+
+<g class="entry-node n3" tabindex="0" role="button" aria-label="Enter constellation" onclick="enterConstellation()" onkeydown="handleLandingKey(event)">
+  <circle class="entry-soft entry-soft-blur" cx="690" cy="170" r="28" fill="#047857"></circle>
+  <circle class="entry-soft entry-soft-core" cx="690" cy="170" r="15" fill="#047857"></circle>
+  <circle class="hit" cx="690" cy="170" r="34"></circle>
+</g>
+
+<g class="entry-node n4" tabindex="0" role="button" aria-label="Enter constellation" onclick="enterConstellation()" onkeydown="handleLandingKey(event)">
+  <circle class="entry-soft entry-soft-blur" cx="920" cy="300" r="30" fill="#0E7490"></circle>
+  <circle class="entry-soft entry-soft-core" cx="920" cy="300" r="16" fill="#0E7490"></circle>
+  <circle class="hit" cx="920" cy="300" r="36"></circle>
+</g>
+
+<g class="entry-node n5" tabindex="0" role="button" aria-label="Enter constellation" onclick="enterConstellation()" onkeydown="handleLandingKey(event)">
+  <circle class="entry-soft entry-soft-blur" cx="1140" cy="240" r="26" fill="#1D4ED8"></circle>
+  <circle class="entry-soft entry-soft-core" cx="1140" cy="240" r="14" fill="#1D4ED8"></circle>
+  <circle class="hit" cx="1140" cy="240" r="32"></circle>
+</g>
+
+<g class="entry-node n6" tabindex="0" role="button" aria-label="Enter constellation" onclick="enterConstellation()" onkeydown="handleLandingKey(event)">
+  <circle class="entry-soft entry-soft-blur" cx="380" cy="680" r="24" fill="#BE123C"></circle>
+  <circle class="entry-soft entry-soft-core" cx="380" cy="680" r="13" fill="#BE123C"></circle>
+  <circle class="hit" cx="380" cy="680" r="30"></circle>
+</g>
+
+<g class="entry-node n7" tabindex="0" role="button" aria-label="Enter constellation" onclick="enterConstellation()" onkeydown="handleLandingKey(event)">
+  <circle class="entry-soft entry-soft-blur" cx="980" cy="630" r="34" fill="#0E7490"></circle>
+  <circle class="entry-soft entry-soft-core" cx="980" cy="630" r="18" fill="#0E7490"></circle>
+  <circle class="hit" cx="980" cy="630" r="40"></circle>
+</g>
+
+<g class="entry-node n8" tabindex="0" role="button" aria-label="Enter constellation" onclick="enterConstellation()" onkeydown="handleLandingKey(event)">
+  <circle class="entry-soft entry-soft-blur" cx="720" cy="760" r="26" fill="#B45309"></circle>
+  <circle class="entry-soft entry-soft-core" cx="720" cy="760" r="14" fill="#B45309"></circle>
+  <circle class="hit" cx="720" cy="760" r="32"></circle>
+</g>
+      </g>
+    </svg>
+  </div>
+
+  <div class="landing-core">
+    <div class="landing-kicker">MSc Clinical Neuroscience · 2025–26</div>
+    <h1 class="landing-title">18 Minds</h1>
+    <p class="landing-sub">A small constellation of thesis projects, drifting between methods, minds, and mildly elegant procrastination.</p>
+  
+  </div>
 </div>
 
 <!-- ── CONSTELLATION ──────────────────────────────────────────────────── -->
 <div class="view" id="view-cst">
   <div id="cst-hdr">
-    <span><strong id="cst-pcount">18</strong> projects · bubble = sample size · dashed line = shared supervisor</span>
+    <span>bubble = sample size</span>
+    <span>dashed line = shared supervisor</span>
   </div>
   <svg id="cst-canvas" aria-label="Research constellation"></svg>
-
 </div>
 
 <!-- ── PROJECTS ───────────────────────────────────────────────────────── -->
@@ -337,9 +572,10 @@ footer a{color:var(--primary);text-decoration:none}
     <div class="cards-grid" id="proj-grid"></div>
   </main>
   <footer>
-    <em>Built by Robin L with Python, HTML & repressed thesis anxiety.</em><br>
-    Correlation ≠ causation · All blobs are convex hulls, just like our coping strategies.
-  </footer>
+  <em>Built by Robin L @jelliwolf with HTML and D3.js.</em><br>
+  This dashboard has not been pre-registered · n=18 is technically enough for a Wilcoxon · All blobs are convex hulls, just like our coping strategies.<br>
+  For a less evidence-based experience, try <a href="https://rhplayground.shinyapps.io/lucid/" target="_blank" rel="noopener noreferrer">Institute of Questionable Neuroclarity</a>.
+</footer>
 </div>
 
 <!-- ── DETAIL PANEL ────────────────────────────────────────────────────── -->
@@ -497,47 +733,93 @@ function ini(name) {
    TAB NAVIGATION
 ══════════════════════════════════════════════════════════════════════════ */
 function showTab(v) {
-  ['overview','cst','proj'].forEach(id => {
-    document.getElementById('view-'+id).classList.toggle('on', id === v);
-    document.getElementById('t-'+id).classList.toggle('on', id === v);
+  ['cst','proj'].forEach(id => {
+    const view = document.getElementById('view-'+id);
+    const tab = document.getElementById('t-'+id);
+    if (view) view.classList.toggle('on', id === v);
+    if (tab) tab.classList.toggle('on', id === v);
   });
-  if (v === 'cst' && !window._cstBuilt) { initConstellation(); window._cstBuilt = true; }
-  if (v === 'proj' && !window._projBuilt) { buildProjectsTab(); window._projBuilt = true; }
+
+  if (v === 'cst' && !window._cstBuilt) {
+    initConstellation();
+    window._cstBuilt = true;
+  }
+
+  if (v === 'proj' && !window._projBuilt) {
+    buildProjectsTab();
+    window._projBuilt = true;
+  }
+
   closeDetail();
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
-   OVERVIEW CHARTS (Plotly)
+   LANDING
 ══════════════════════════════════════════════════════════════════════════ */
-const PURPLE = '#6d28d9';
-const cfg = {displayModeBar:false, responsive:true};
-const layout_base = {
-  paper_bgcolor:'transparent', plot_bgcolor:'transparent',
-  font:{family:'Satoshi, Inter, sans-serif', color:'#3d3453', size:11},
-  margin:{t:10, b:40, l:8, r:8},
-  showlegend:false,
-};
+let landingExitTimer = null;
+let landingSublineTimer = null;
+let enteringConstellation = false;
 
+function handleLandingKey(event) {
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault();
+    enterConstellation();
+  }
+}
 
+function openLanding() {
+  clearTimeout(landingExitTimer);
+  clearTimeout(landingSublineTimer);
+  enteringConstellation = false;
 
+  const landing = document.getElementById('landing');
+  landing.classList.remove('hidden', 'exiting', 'subline-in');
 
+  ['cst','proj'].forEach(id => {
+    const view = document.getElementById('view-' + id);
+    const tab = document.getElementById('t-' + id);
+    if (view) view.classList.remove('on');
+    if (tab) tab.classList.remove('on');
+  });
+
+  closeDetail();
+  hideTip();
+
+  landingSublineTimer = setTimeout(() => {
+    landing.classList.add('subline-in');
+  }, 350);
+}
+
+function startLandingSequence() {
+  openLanding();
+}
+
+function enterConstellation() {
+  if (enteringConstellation) return;
+  enteringConstellation = true;
+
+  const landing = document.getElementById('landing');
+  landing.classList.add('exiting');
+
+  landingExitTimer = setTimeout(() => {
+    showTab('cst');
+    landing.classList.add('hidden');
+    enteringConstellation = false;
+  }, 2000);
+}
+
+function replayLanding() {
+  openLanding();
+}
 
 /* ══════════════════════════════════════════════════════════════════════════
-   CONSTELLATION (D3 force — copied from original dashboard-1.html design)
+   CONSTELLATION
 ══════════════════════════════════════════════════════════════════════════ */
 let sim, _nodes;
 let activeCluster = null, cstQuery = '';
 
 function initConstellation() {
   initGraph();
-}
-
-
-
-function applyCstFilter() {
-  const n = DATA.filter(d => !activeCluster || d.cl === activeCluster).length;
-  document.getElementById('cst-pcount').textContent = n;
-  d3.selectAll('.node').classed('dimmed', d => !!(activeCluster && d.cl !== activeCluster));
 }
 
 function initGraph() {
@@ -548,27 +830,24 @@ function initGraph() {
   const svg = d3.select('#cst-canvas').attr('width', W).attr('height', H);
   svg.selectAll('*').remove();
 
-  // ADD BLUR FILTER:
-svg.append('defs').html(`
-  <filter id="blob-blur" x="-50%" y="-50%" width="200%" height="200%">
-    <feGaussianBlur in="SourceGraphic" stdDeviation="20"/>
-  </filter>
-`);
+  svg.append('defs').html(`
+    <filter id="blob-blur" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="20"/>
+    </filter>
+  `);
 
   const blobCurve = d3.line().curve(d3.curveCatmullRomClosed.alpha(0.5));
   const clusterKeys = Object.keys(CL);
   const K = clusterKeys.length;
 
-  // Cluster centroids
   const cx = {}, cy = {};
   clusterKeys.forEach((k, i) => {
     const ang = (i / K) * 2 * Math.PI - Math.PI / 2;
     const R = Math.min(W, H) * (W < 640 ? 0.28 : 0.31);
     cx[k] = W/2 + R * Math.cos(ang);
-    cy[k] = H/2 + 20 + R * Math.sin(ang);
+    cy[k] = H/2 + R * Math.sin(ang);
   });
 
-  // Size scale: sqrt scale, sample → radius
   const sz = d3.scaleSqrt().domain([10, 20000]).range([13, 42]);
 
   _nodes = DATA.map(p => ({
@@ -579,7 +858,6 @@ svg.append('defs').html(`
     y: cy[p.cl] + (Math.random()-.5)*50,
   }));
 
-  // Supervisor link pairs
   const linkPairs = [];
   Object.values(SUPGROUPS).forEach(ids => {
     for (let i=0; i<ids.length; i++)
@@ -597,7 +875,7 @@ svg.append('defs').html(`
     .force('collide', d3.forceCollide(d => d.r + 14).strength(0.9))
     .force('cx',      d3.forceX(d => cx[d.cl]).strength(0.30))
     .force('cy',      d3.forceY(d => cy[d.cl]).strength(0.30))
-    .force('center',  d3.forceCenter(W/2, H/2+20).strength(0.02))
+    .force('center',  d3.forceCenter(W/2, H/2).strength(0.02))
     .on('tick', tick);
 
   const nodeG = gNodes.selectAll('.node')
@@ -629,7 +907,7 @@ svg.append('defs').html(`
     const nW = document.getElementById('view-cst').clientWidth || window.innerWidth;
     const nH = document.getElementById('view-cst').clientHeight || (window.innerHeight - 52);
     svg.attr('width',nW).attr('height',nH);
-    sim.force('center', d3.forceCenter(nW/2, nH/2+20).strength(0.02)).alpha(0.3).restart();
+    sim.force('center', d3.forceCenter(nW/2, nH/2).strength(0.02)).alpha(0.3).restart();
   });
 
   function tick() {
@@ -662,7 +940,7 @@ svg.append('defs').html(`
           return [n.x + R*Math.cos(a), n.y + R*Math.sin(a)];
         });
         gBlob.append('path').attr('d', blobCurve(pts)+'Z')
-  .attr('fill',col).attr('fill-opacity',0.25);
+          .attr('fill',col).attr('fill-opacity',0.25);
         labelX = n.x; labelY = n.y - R - 14;
       } else {
         const rawPts = ns.map(n => [n.x, n.y]);
@@ -679,12 +957,11 @@ svg.append('defs').html(`
           return [x+(dx/dist)*36, y+(dy/dist)*36];
         });
         gBlob.append('path').attr('d', blobCurve(exp)+'Z')
-        .attr('fill',col).attr('fill-opacity',0.22);
+          .attr('fill',col).attr('fill-opacity',0.22);
 
         labelX = cent[0];
         labelY = Math.min(...exp.map(p=>p[1])) - 14;
       }
-      // Clamp label — stay below top header, above legend
       labelY = Math.max(30, Math.min(bH - 80, labelY));
       gBlobL.append('text').attr('class','c-label')
         .attr('x', labelX).attr('y', labelY)
@@ -710,7 +987,6 @@ let projCluster = null, projQuery = '', projDsrc = '', projDtype = '', projVuln 
 
 function buildProjectsTab() {
   window._projBuilt = true;
-  // Filter chips
   const wrap = document.getElementById('proj-filters');
   wrap.innerHTML = '';
   Object.entries(CL).forEach(([name, color]) => {
@@ -725,7 +1001,6 @@ function buildProjectsTab() {
     });
     wrap.appendChild(b);
   });
-  // Search
   document.getElementById('proj-search').addEventListener('input', function() {
     projQuery = this.value.toLowerCase().trim(); renderCards();
   });
@@ -802,7 +1077,6 @@ function renderCards() {
 function openDetail(d) {
   hideTip();
   const col = d.col || CL[d.cl];
-  // Dim constellation nodes if visible
   if (window._cstBuilt) {
     d3.selectAll('.node').classed('dimmed', n => n.id !== d.id);
   }
@@ -853,10 +1127,14 @@ function hideTip() {
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
-   KEYBOARD
+   KEYBOARD + INIT
 ══════════════════════════════════════════════════════════════════════════ */
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeDetail();
+});
+
+window.addEventListener('load', () => {
+  startLandingSequence();
 });
 </script>
 </body>
