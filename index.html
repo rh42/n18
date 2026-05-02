@@ -775,7 +775,7 @@ let enteringConstellation = false;
 function handleLandingKey(event) {
   if (event.key === 'Enter' || event.key === ' ') {
     event.preventDefault();
-    enterConstellation();
+    if (!enteringConstellation) enterConstellation();
   }
 }
 
@@ -828,6 +828,7 @@ function enterConstellation() {
 
 function replayLanding() {
   openLanding();
+  registerLandingKeyExit();
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -1156,11 +1157,28 @@ function hideTip() {
 /* ══════════════════════════════════════════════════════════════════════════
    KEYBOARD + INIT
 ══════════════════════════════════════════════════════════════════════════ */
+// KEYBOARD INIT
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeDetail();
 });
 
-window.addEventListener('load', openLanding);
+function registerLandingKeyExit() {
+  document.addEventListener('keydown', function _landingExit(e) {
+    if (e.key === ' ' || e.key === 'Enter') {
+      const landing = document.getElementById('landing');
+      if (!landing.classList.contains('hidden') && !enteringConstellation) {
+        e.preventDefault();
+        document.removeEventListener('keydown', _landingExit);
+        enterConstellation();
+      }
+    }
+  });
+}
+
+window.addEventListener('load', () => {
+  openLanding();
+  registerLandingKeyExit();
+});
 
 </script>
 </body>
